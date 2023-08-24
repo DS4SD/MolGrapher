@@ -7,14 +7,13 @@ The code will be released soon.
 
 ### Citation
 ```
-@article{
-    MolGrapher,
-    title = {MolGrapher: Graph-based Visual Recognition of Chemical Structures},
-    author = {},
-    journal = {},
-    publisher = {},
-    doi = {},
-    year = 2023,
+@misc{morin2023molgrapher,
+      title = {MolGrapher: Graph-based Visual Recognition of Chemical Structures}, 
+      author = {Lucas Morin and Martin Danelljan and Maria Isabel Agea and Ahmed Nassar and Valery Weber and Ingmar Meijer and Peter Staar and Fisher Yu},
+      year = {2023},
+      eprint = {2308.12234},
+      archivePrefix = {arXiv},
+      primaryClass = {cs.CV}
 }
 ```
 ### USPTO-30K Benchmark
