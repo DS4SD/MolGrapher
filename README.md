@@ -1,6 +1,6 @@
 # MolGrapher
 
-This is the repository for [MolGrapher: Graph-based Visual Recognition of Chemical Structures]().
+This is the repository for [MolGrapher: Graph-based Visual Recognition of Chemical Structures](https://arxiv.org/abs/2308.12234).
 The code will be released soon.
 
 ![MolGrapher](assets/model_architecture.png)
