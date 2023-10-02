@@ -7,11 +7,13 @@ The code will be released soon.
 
 ### Citation
 ```
-@inproceedings{morin2023molgrapher,
-    title={MolGrapher: Graph-based Visual Recognition of Chemical Structures}, 
-    author={Lucas Morin and Martin Danelljan and Maria Isabel Agea and Ahmed Nassar and Valery Weber and Ingmar Meijer and Peter Staar and Fisher Yu},
-    journal={International Conference on Computer Vision (ICCV)},
-    year={2023}
+@InProceedings{Morin_2023_ICCV,
+    author    = {Morin, Lucas and Danelljan, Martin and Agea, Maria Isabel and Nassar, Ahmed and Weber, Valery and Meijer, Ingmar and Staar, Peter and Yu, Fisher},
+    title     = {MolGrapher: Graph-based Visual Recognition of Chemical Structures},
+    booktitle = {Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)},
+    month     = {October},
+    year      = {2023},
+    pages     = {19552-19561}
 }
 ```
 ### USPTO-30K Benchmark
