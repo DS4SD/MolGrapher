@@ -1,0 +1,16 @@
+{
+    "experiment_name": "exp-ad-601",
+    "batch_size": 10,
+    "nb_workers": 10,
+    "num_processes_mp": 10,
+    "num_threads_pytorch": 10,
+    "image_size": [3, 1024, 1024],
+    "mask_size": [1, 256, 256],
+    "nb_sample": 10000,
+    "nb_sample_benchmarks": [10000],
+    "nb_duplicates": 1,
+    "nb_sample_fine-tuning": 10,
+    "training_dataset": "cede-synthetic",
+    "benchmarks": ["molgrapher-synthetic"],
+    "on_fly": false
+}

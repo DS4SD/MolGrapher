@@ -1,0 +1,38 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: dc-molgrapher-__TYPED__-__YEAR__-__N_MODE__-__I_MODE__
+  namespace: deep-chem
+spec:
+  nodeSelector:
+    nvidia.com/gpu.product: NVIDIA-A100-80GB-PCIe
+  containers:
+    - resources:
+        limits:
+          cpu: '16'
+          memory: 32Gi
+          nvidia.com/gpu: '1'
+        requests:
+          cpu: '16'
+          memory: 32Gi
+          nvidia.com/gpu: '1'
+      terminationMessagePath: /dev/termination-log
+      name: os-ds-explorer-1
+      imagePullPolicy: Always
+      terminationMessagePolicy: File
+      image: >-
+        docker-eu-public.artifactory.swg-devops.com/zrl-sa-docker-virtual/patent-anno-molgrapher:latest
+      env:
+        - name: I_MODE
+          value: "__I_MODE__"
+        - name: N_MODE
+          value: "__N_MODE__"
+        - name: S3_IN_BASE
+          value: "foc-deepsearch/foc-deepsearch-uspto-data/chem/segs2/__TYPE__"
+        - name: S3_OUT_BASE
+          value: "foc-deepsearch/foc-deepsearch-uspto-data/chem/molgrapher/__TYPE__"
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 30
+  imagePullSecrets:
+    - name: zrl-sa-docker
+  schedulerName: default-scheduler

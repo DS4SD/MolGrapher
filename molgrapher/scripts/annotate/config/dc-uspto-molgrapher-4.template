@@ -1,0 +1,47 @@
+kind: Job
+apiVersion: batch/v1
+metadata:
+  namespace: deep-chem-gpu
+  name: dc-molgrapher-__TYPED__-__YEAR__-__N_MODE__-__I_MODE__-c
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+      containers:
+        - name: os-ds-explorer-1
+          image: >-
+            docker-eu-public.artifactory.swg-devops.com/zrl-sa-docker-virtual/patent-anno-molgrapher:latest
+          volumeMounts:                 
+            - mountPath: /dev/shm
+              name: dshm
+          env:
+            - name: I_MODE
+              value: "__I_MODE__"
+            - name: N_MODE
+              value: "__N_MODE__"
+            - name: S3_IN_BASE
+              value: "foc-deepsearch/foc-deepsearch-uspto-data/chem/segs2/__TYPE__"
+            - name: S3_OUT_BASE
+              value: "foc-deepsearch/foc-deepsearch-uspto-data/chem/molgrapher/__TYPE__"
+          resources:
+            limits:
+              cpu: '48'
+              memory: 128Gi
+              nvidia.com/gpu: '1'
+            requests:
+              cpu: '48'
+              memory: 128Gi
+              nvidia.com/gpu: '1'
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+      imagePullSecrets:
+      - name: zrl-sa-docker
+      restartPolicy: Never
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+      activeDeadlineSeconds: 86400

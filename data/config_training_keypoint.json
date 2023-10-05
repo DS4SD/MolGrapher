@@ -1,0 +1,14 @@
+{
+    "run_name": "run-cede-10k-010",
+    "checkpoint": "exp-ad-201-run-abbreviations-k02-val_loss=0.0003-v1",
+    "lr": 1e-3,
+    "accelerator": "gpu",
+    "devices": [0],
+    "precision": 32, 
+    "max_epochs": 500,
+    "decay_t": 1,
+    "decay_step_frequency": 1500,
+    "decay_rate": 0.8,
+    "warmup_t": 0,
+    "warmup_lr_init": 0 
+}
