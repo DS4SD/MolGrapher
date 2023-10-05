@@ -1,0 +1,13 @@
+{   
+    "run_name": "run-11",
+    "lr": 1e-3,
+    "accelerator": "gpu",
+    "devices": [0],
+    "precision": 32, 
+    "max_epochs": 100,
+    "decay_rate": 1,
+    "decay_step_frequency": 1500,
+    "decay_t": 1,
+    "warmup_t": 0,
+    "warmup_lr_init": 0
+}
