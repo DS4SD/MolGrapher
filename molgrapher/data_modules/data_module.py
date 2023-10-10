@@ -201,7 +201,7 @@ class DataModule(pl.LightningDataModule):
         })
         return dataset 
 
-    def setup(self, stage=None):
+    def setup(self, stage=None, hf_dataset=True):
         """
         setup() is automatically called on each GPU process.
         A distributedsampler under the hood will make the dataloaders draw samples from different part of the same dataset. 
@@ -232,61 +232,76 @@ class DataModule(pl.LightningDataModule):
             print("Setup real dataset")
             self.setup_keypoints_benchmarks(stage = "fine-tuning")
         
-        # Synthetic Data
-        print("Setup synthetic dataset")
-        with open(os.path.dirname(__file__) + "/../../data/synthetic_images_molecules_keypoints/keypoints_images_filenames_" + self.config["experiment_name"] + ".json", 'r') as json_file:
-            coco_json  = json.load(json_file)
-        
-        dataset = pd.DataFrame({
-            "smiles": [image["smiles"] for index, image in enumerate(coco_json["images"]) if index < self.config["nb_sample"]], 
-            "image_filename": [image["image_filename"] for index, image in enumerate(coco_json["images"]) if index < self.config["nb_sample"]], 
-            "molfile_filename": [image["molfile_filename"] for index, image in enumerate(coco_json["images"]) if index < self.config["nb_sample"]],
-            "keypoints": [annotation["keypoints"] for index, annotation in enumerate(coco_json["annotations"]) if index < self.config["nb_sample"]]
-        })
-        
-        # Temporary fix
-        dataset["image_filename"] = [p.replace("joker", "molgrapher") for p in dataset["image_filename"]]
-        dataset["molfile_filename"] = [p.replace("joker", "molgrapher") for p in dataset["molfile_filename"]]
-
-        # Filter
-        if self.clean_only:
-            print(f"Synthetic dataset length before filtering: {len(dataset)}")
-            remove_indices = []
-            for index, molfile_filename in enumerate(dataset["molfile_filename"]):
-                # Note: The index in the dataset df is range(0, len(df)) 
-                molfile_annotator = LabelMolFile(
-                    molfile_filename,
-                    reduce_abbreviations = True
-                ) 
-                molecule = molfile_annotator.rdk_mol
-                if any([((atom.GetSymbol() == "R") or (atom.GetSymbol() == "*") or atom.HasProp("_displayLabel")) for atom in molecule.GetAtoms()]):
-                    remove_indices.append(index)
-            dataset = dataset.drop(remove_indices)
-            print(f"Synthetic dataset length after filtering: {len(dataset)}")
-
-        # Split
-        train_ratio = 0.8
-        val_ratio = 0.1
-        test_ratio = 0.1
-        train_dataset, test_dataset = train_test_split(dataset, test_size = 1 - train_ratio)
-        val_dataset, test_dataset = train_test_split(test_dataset, test_size = test_ratio/(test_ratio + val_ratio)) 
-
-        # Save train/val/test splits
-        train_filenames = pd.DataFrame([p.split("/")[-1] for p in train_dataset["image_filename"]])
-        train_filenames.to_csv(os.path.dirname(__file__) + "/../../data/synthetic_images_molecules_keypoints/train_images_filenames_" + self.config["experiment_name"] + ".csv")
-        val_filenames = pd.DataFrame([p.split("/")[-1] for p in val_dataset["image_filename"]])
-        val_filenames.to_csv(os.path.dirname(__file__) + "/../../data/synthetic_images_molecules_keypoints/val_images_filenames_" + self.config["experiment_name"] + ".csv")
-        test_filenames = pd.DataFrame([p.split("/")[-1] for p in test_dataset["image_filename"]])
-        test_filenames.to_csv(os.path.dirname(__file__) + "/../../data/synthetic_images_molecules_keypoints/test_images_filenames_" + self.config["experiment_name"] + ".csv")
-
         predict = False
         if (stage != TrainerFn.FITTING):
             print("Disable augmentations for testing")
             # Testing without augmentations
             predict = True
+                
+        # Synthetic Data
+        print("Setup synthetic dataset")
+        if not hf_dataset:
+            with open(os.path.dirname(__file__) + "/../../data/synthetic_images_molecules_keypoints/keypoints_images_filenames_" + self.config["experiment_name"] + ".json", 'r') as json_file:
+                coco_json  = json.load(json_file)
+            
+            dataset = pd.DataFrame({
+                "smiles": [image["smiles"] for index, image in enumerate(coco_json["images"]) if index < self.config["nb_sample"]], 
+                "image_filename": [image["image_filename"] for index, image in enumerate(coco_json["images"]) if index < self.config["nb_sample"]], 
+                "molfile_filename": [image["molfile_filename"] for index, image in enumerate(coco_json["images"]) if index < self.config["nb_sample"]],
+                "keypoints": [annotation["keypoints"] for index, annotation in enumerate(coco_json["annotations"]) if index < self.config["nb_sample"]]
+            })
 
-        self.train_dataset = self.dataset_class(train_dataset, config=self.config, train=True)
-        self.val_dataset = self.dataset_class(val_dataset, config=self.config, train=False, predict=predict, evaluate=self.dataset_evaluate)
+            # Temporary fix
+            dataset["image_filename"] = [p.replace("joker", "molgrapher") for p in dataset["image_filename"]]
+            dataset["molfile_filename"] = [p.replace("joker", "molgrapher") for p in dataset["molfile_filename"]]
+
+            # Filter
+            if self.clean_only:
+                print(f"Synthetic dataset length before filtering: {len(dataset)}")
+                remove_indices = []
+                for index, molfile_filename in enumerate(dataset["molfile_filename"]):
+                    # Note: The index in the dataset df is range(0, len(df)) 
+                    molfile_annotator = LabelMolFile(
+                        molfile_filename,
+                        reduce_abbreviations = True
+                    ) 
+                    molecule = molfile_annotator.rdk_mol
+                    if any([((atom.GetSymbol() == "R") or (atom.GetSymbol() == "*") or atom.HasProp("_displayLabel")) for atom in molecule.GetAtoms()]):
+                        remove_indices.append(index)
+                dataset = dataset.drop(remove_indices)
+                print(f"Synthetic dataset length after filtering: {len(dataset)}")
+
+            # Split
+            train_ratio = 0.8
+            val_ratio = 0.1
+            test_ratio = 0.1
+            train_dataset, test_dataset = train_test_split(dataset, test_size = 1 - train_ratio)
+            val_dataset, test_dataset = train_test_split(test_dataset, test_size = test_ratio/(test_ratio + val_ratio)) 
+
+            # Save train/val/test splits
+            train_filenames = pd.DataFrame([p.split("/")[-1] for p in train_dataset["image_filename"]])
+            train_filenames.to_csv(os.path.dirname(__file__) + "/../../data/synthetic_images_molecules_keypoints/train_images_filenames_" + self.config["experiment_name"] + ".csv")
+            val_filenames = pd.DataFrame([p.split("/")[-1] for p in val_dataset["image_filename"]])
+            val_filenames.to_csv(os.path.dirname(__file__) + "/../../data/synthetic_images_molecules_keypoints/val_images_filenames_" + self.config["experiment_name"] + ".csv")
+            test_filenames = pd.DataFrame([p.split("/")[-1] for p in test_dataset["image_filename"]])
+            test_filenames.to_csv(os.path.dirname(__file__) + "/../../data/synthetic_images_molecules_keypoints/test_images_filenames_" + self.config["experiment_name"] + ".csv")
+
+            self.train_dataset = self.dataset_class(train_dataset, config=self.config, train=True)
+            self.val_dataset = self.dataset_class(val_dataset, config=self.config, train=False, predict=predict, evaluate=self.dataset_evaluate)
+        
+        if hf_dataset:
+            from datasets import load_dataset
+            dataset = load_dataset("ds4sd/molgrapher-synthetic-300k")
+
+            train_dataset = dataset["train"].to_pandas()
+            val_dataset = dataset["validation"].to_pandas()
+            train_dataset["image_filename"] = [str(sample["id"]) + ".png" for _, sample in train_dataset.iterrows()]
+            train_dataset["molfile_filename"] = [str(sample["id"]) + ".mol" for _, sample in train_dataset.iterrows()]
+            val_dataset["image_filename"] = [str(sample["id"]) + ".png" for _, sample in val_dataset.iterrows()]
+            val_dataset["molfile_filename"] = [str(sample["id"]) + ".mol" for _, sample in val_dataset.iterrows()]
+            
+            self.train_dataset = self.dataset_class(train_dataset, config=self.config, train=True, hf_dataset=hf_dataset)
+            self.val_dataset = self.dataset_class(val_dataset, config=self.config, train=False, predict=predict, evaluate=self.dataset_evaluate, hf_dataset=hf_dataset)
 
     def save_images_filenames_keypoints(self, keypoints_list, images_filenames, molfiles_filenames, smiles_list, save_path):
         # COCO dataset

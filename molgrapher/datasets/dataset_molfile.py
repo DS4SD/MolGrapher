@@ -21,7 +21,9 @@ class MolfileDataset(torch.utils.data.Dataset):
         preprocessed=False, 
         evaluate=False, 
         force_cpu=False, 
-        taa_step=0
+        taa_step=0,
+        *args,
+        **kwargs
     ):
         self.dataset = dataset
         self.config = config

@@ -1,5 +1,5 @@
 {   
-    "experiment_name": "exp-ad-201", 
+    "experiment_name": "exp-default", 
     "batch_size": 10,
     "nb_workers": 10,
     "num_processes_mp": 8,

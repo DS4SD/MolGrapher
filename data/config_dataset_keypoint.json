@@ -1,7 +1,7 @@
 {
     "experiment_name": "exp-default",
-    "batch_size": 10,
-    "nb_workers": 10,
+    "batch_size": 4,
+    "nb_workers": 4,
     "num_processes_mp": 10,
     "num_threads_pytorch": 10,
     "image_size": [3, 1024, 1024],
