@@ -42,7 +42,7 @@ pip install -e .
 Models are available on [Hugging Face](https://huggingface.co/ds4sd/MolGrapher).
 
 After downloading, the folder: `models`, should be placed in: `./data/`.
-Models can be selected by modifying attributes of GraphRecognizer (`./molgrapher/models/graph_recognizer.py`). 
+Models can be selected by modifying attributes of GraphRecognizer (in `./molgrapher/models/graph_recognizer.py`). 
 
 ### Inference
 
