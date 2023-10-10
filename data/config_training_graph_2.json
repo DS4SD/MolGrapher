@@ -1,0 +1,14 @@
+{   
+    "run_name": "run-eff001",
+    "checkpoint": "exp-ad-201-run-64-backbone-wedge-bonds-01-val_loss=0.0229-val_accuracy=99.8307",
+    "lr": 1e-4,
+    "accelerator": "gpu",
+    "devices": [0],
+    "precision": 32, 
+    "max_epochs": 1000,
+    "decay_rate": 0.8,
+    "decay_step_frequency": 1500,
+    "decay_t": 1,
+    "warmup_t": 0,
+    "warmup_lr_init": 0
+}

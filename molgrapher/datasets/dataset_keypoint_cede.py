@@ -12,7 +12,7 @@ from molgrapher.utils.utils_augmentation import get_transforms_dict, GraphTransf
 
 
 class KeypointCedeDataset(torch.utils.data.Dataset):
-    def __init__(self, dataset, config, train=True, predict=False):
+    def __init__(self, dataset, config, train=True, predict=False, *args, **kwargs):
         self.dataset = dataset
         self.config = config
         self.train = train

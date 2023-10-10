@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import io
 import torch
 import numpy as np
 from PIL import Image
@@ -15,13 +16,14 @@ from molgrapher.utils.utils_augmentation import get_transforms_dict, GraphTransf
 
 
 class KeypointDataset(torch.utils.data.Dataset):
-    def __init__(self, dataset, config, train=True, predict=False, evaluate=False):
+    def __init__(self, dataset, config, train=True, predict=False, evaluate=False, hf_dataset=False, *args, **kwargs):
         self.dataset = dataset
         self.config = config
         self.train = train
         self.predict = predict
         self.transforms_dict = get_transforms_dict(config)
         self.evaluate = evaluate
+        self.hf_dataset = hf_dataset
         self.precomputed_gaussians = {}
         
     def decrement_index(self, index):
@@ -51,10 +53,13 @@ class KeypointDataset(torch.utils.data.Dataset):
                 # Read keypoints
                 keypoints_flat = self.dataset["keypoints"].iloc[index]
                 keypoints = [(keypoints_flat[i], keypoints_flat[i+1]) for i in range(0, len(keypoints_flat), 3)]
-            
+
                 # Read image
-                image_filename = self.dataset["image_filename"].iloc[index]
-                image = Image.open(image_filename).convert("RGB")
+                if self.hf_dataset:
+                    image = Image.open(io.BytesIO(self.dataset["image"].iloc[index]["bytes"])).convert("RGB")
+                else:
+                    image_filename = self.dataset["image_filename"].iloc[index]
+                    image = Image.open(image_filename).convert("RGB")
              
                 if (image.size[0] != self.config["image_size"][1]) or (image.size[1] != self.config["image_size"][2]):
                     # Resize inference image
@@ -106,10 +111,11 @@ class KeypointDataset(torch.utils.data.Dataset):
             # Augment keypoints positions
             if self.train:
                 graph_transformer = GraphTransformer(
-                    config = self.config,
-                    keypoints_shift_limit = [0, 0.01],
-                    decoy_keypoint_shift_limit = [0.05, 0.3],
-                    decoy_atom_population_density = 0
+                    config=self.config,
+                    keypoints_shift_limit=[0, 0.01],
+                    decoy_keypoint_shift_limit=[0.05, 0.3],
+                    decoy_atom_population_density=0,
+                    keypoints_only=True
                 )
 
                 keypoints = graph_transformer.shift_keypoints_positions(

@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import math
 import os
+import io
 import torch
 import numpy as np
 from PIL import Image
 import pandas as pd
-from rdkit import Chem
 import random 
+from rdkit import Chem
 from torchvision.transforms import functional
 
-from mol_depict.utils.utils_drawing import draw_molecule_rdkit, draw_molecule_keypoints_rdkit
+from mol_depict.utils.utils_drawing import draw_molecule_keypoints_rdkit
 from mol_depict.utils.utils_image import resize_image
 from mol_depict.molfile_parser.label_molfile import LabelMolFile
 from molgrapher.utils.utils_augmentation import get_transforms_dict, GraphTransformer
@@ -20,13 +20,14 @@ from molgrapher.models.graph_constructor import GraphConstructor
 
 
 class GraphDataset(torch.utils.data.Dataset):
-    def __init__(self, dataset, config, train=True, predict=False, evaluate=False):
+    def __init__(self, dataset, config, train=True, predict=False, evaluate=False, hf_dataset=False, *args, **kwargs):
         self.dataset = dataset
         self.config = config
         self.train = train
         self.predict = predict
         self.transforms_dict = get_transforms_dict(config)
         self.evaluate = evaluate
+        self.hf_dataset = hf_dataset
         if not self.evaluate:
             self.collate_fn = None
         
@@ -50,10 +51,11 @@ class GraphDataset(torch.utils.data.Dataset):
             graph_constructor = GraphConstructor(
                 keypoints, 
                 image, 
-                self.config, 
-                gt_molecular_graph = molecular_graph, 
-                restricted_proposals = restricted_proposals,
-                discarded_bond_length_factor = 3
+                config_dataset_keypoint={},
+                config_dataset_graph=self.config,
+                gt_molecular_graph=molecular_graph, 
+                restricted_proposals=restricted_proposals,
+                discarded_bond_length_factor=3
             )
             molecular_graph = graph_constructor.augment_gt_molecular_graph()
 
@@ -62,10 +64,11 @@ class GraphDataset(torch.utils.data.Dataset):
             graph_constructor = GraphConstructor(
                 keypoints, 
                 image, 
-                self.config, 
-                gt_molecular_graph = molecular_graph, 
-                restricted_proposals = False,
-                discarded_bond_length_factor = 1.75
+                config_dataset_keypoint={},
+                config_dataset_graph=self.config,
+                gt_molecular_graph=molecular_graph, 
+                restricted_proposals=False,
+                discarded_bond_length_factor=1.75
             )
             molecular_graph = graph_constructor.augment_gt_molecular_graph()
         return molecular_graph 
@@ -87,8 +90,11 @@ class GraphDataset(torch.utils.data.Dataset):
                 keypoints = [[keypoints_flat[i] - 1, keypoints_flat[i+1] - 1] for i in range(0, len(keypoints_flat), 3)]
                 
                 # Read image
-                image_filename = self.dataset["image_filename"].iloc[index]
-                image = Image.open(image_filename).convert("RGB") 
+                if self.hf_dataset:
+                    image = Image.open(io.BytesIO(self.dataset["image"].iloc[index]["bytes"])).convert("RGB")
+                else:
+                    image_filename = self.dataset["image_filename"].iloc[index]
+                    image = Image.open(image_filename).convert("RGB") 
                 
                 if (image.size[0] != self.config["image_size"][1]) or (image.size[1] != self.config["image_size"][2]):
                     # Resize inference images
@@ -138,11 +144,14 @@ class GraphDataset(torch.utils.data.Dataset):
             image = torch.from_numpy(image).permute(2, 0, 1)
             
             # Convert molfile to pytorch geometric graph
-            molfile_annotator = LabelMolFile(
-                self.dataset["molfile_filename"].iloc[index],
-                reduce_abbreviations = True
-            ) 
-            molecule = molfile_annotator.rdk_mol
+            if self.hf_dataset:
+                molecule = Chem.MolFromMolBlock(self.dataset["mol"].iloc[index], sanitize=False, removeHs=False)
+            else:
+                molfile_annotator = LabelMolFile(
+                    self.dataset["molfile_filename"].iloc[index],
+                    reduce_abbreviations = True
+                ) 
+                molecule = molfile_annotator.rdk_mol
             
             if molecule is None:
                 index = self.decrement_index(index)

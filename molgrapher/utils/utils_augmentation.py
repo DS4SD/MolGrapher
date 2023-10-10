@@ -156,14 +156,15 @@ def get_transforms_dict(config):
 
 
 class GraphTransformer():
-    def __init__(self, config, keypoints_shift_limit, decoy_keypoint_shift_limit, decoy_atom_population_density):
+    def __init__(self, config, keypoints_shift_limit, decoy_keypoint_shift_limit, decoy_atom_population_density, keypoints_only=False):
         self.config = config
         self.keypoints_shift_limit = keypoints_shift_limit
         self.decoy_keypoint_shift_limit = decoy_keypoint_shift_limit
         self.decoy_atom_population_density = decoy_atom_population_density
 
-        self.symbols_classes_atoms = json.load(open(os.path.dirname(__file__) + "/../../data/vocabularies/vocabulary_atoms.json"))
-        self.types_classes_bonds = json.load(open(os.path.dirname(__file__) + "/../../data/vocabularies/vocabulary_bonds.json"))
+        if not keypoints_only:
+            self.symbols_classes_atoms = json.load(open(os.path.dirname(__file__) + f"/../../data/vocabularies/vocabulary_atoms_{config['nb_atoms_classes']}.json"))
+            self.types_classes_bonds = json.load(open(os.path.dirname(__file__) + f"/../../data/vocabularies/vocabulary_bonds_{config['nb_bonds_classes']}.json"))
 
     def shift_keypoints_positions(self, keypoints, shift_window):
         shifted_keypoints = []

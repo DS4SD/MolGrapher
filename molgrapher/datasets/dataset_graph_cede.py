@@ -14,7 +14,7 @@ from molgrapher.models.graph_constructor import GraphConstructor
 
 
 class GraphCedeDataset(torch.utils.data.Dataset):
-    def __init__(self, dataset, config, train=True, predict=False, evaluate=False):
+    def __init__(self, dataset, config, train=True, predict=False, evaluate=False, *args, **kwargs):
         self.dataset = dataset
         self.config = config
         self.train = train

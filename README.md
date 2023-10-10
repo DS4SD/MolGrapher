@@ -52,16 +52,7 @@ bash molgrapher/scripts/annotate/run.sh
 ```
 Output predictions are saved in: `./data/predictions/default/`.
 
-### Training
-
-To train the keypoint detector:
-```
-python3 ./molgrapher/scripts/train/train_keypoint_detector.py
-```
-To train the node classifier:
-```
-python3 ./molgrapher/scripts/train/train_graph_classifier.py
-```
+By default, molgrapher runs on CPU. This option can be modified in: `./molgrapher/scripts/annotate/run_predict/`, changing the flag `--force-cpu` to `--no-force-cpu`.
 
 ### USPTO-30K Benchmark
 
@@ -74,3 +65,14 @@ USPTO-30K is available on [Hugging Face](https://huggingface.co/datasets/ds4sd/U
 
 The synthetic dataset is available on [Hugging Face](https://huggingface.co/datasets/ds4sd/MolGrapher-Synthetic-300K).
 Images and graphs are generated using [MolDepictor](https://github.com/DS4SD/MolDepictor/).
+
+### Training
+
+To train the keypoint detector:
+```
+python3 ./molgrapher/scripts/train/train_keypoint_detector.py
+```
+To train the node classifier:
+```
+python3 ./molgrapher/scripts/train/train_graph_classifier.py
+```

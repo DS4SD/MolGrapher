@@ -12,7 +12,7 @@ from molgrapher.utils.utils_dataset import CaptionRemover, crop_tight
 
 
 class ImageDataset(torch.utils.data.Dataset):
-    def __init__(self, dataset, config, preprocessed=False, evaluate=False, force_cpu=False):
+    def __init__(self, dataset, config, preprocessed=False, evaluate=False, force_cpu=False, *args, **kwargs):
         self.dataset = dataset
         self.config = config
         self.border_size = 30
