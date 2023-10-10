@@ -4,7 +4,7 @@ import math
 import numpy as np 
 from collections import OrderedDict
 import torch.utils.model_zoo as model_zoo
-from torchvision.models.resnet import model_urls
+from torchvision.models.resnet import ResNet18_Weights, ResNet50_Weights, ResNet101_Weights
 
 
 def get_point_of_trisection_coordinates(segment, ratio_b, ratio_e):
@@ -188,11 +188,11 @@ class Bottleneck(nn.Module):
 
 class ResNet(Backbone):
     """ ResNet network module. Allows extracting specific feature blocks."""
-    def __init__(self, block, layers, output_layers, num_classes=1000, inplanes=64, dilation_factor=1, frozen_layers=()):
+    def __init__(self, block, layers, output_layers, conv1_stride=2, num_classes=1000, inplanes=64, dilation_factor=1, frozen_layers=()):
         self.inplanes = inplanes
         super(ResNet, self).__init__(frozen_layers=frozen_layers)
         self.output_layers = output_layers
-        self.conv1 = nn.Conv2d(3, inplanes, kernel_size=7, stride=2, padding=3,
+        self.conv1 = nn.Conv2d(3, inplanes, kernel_size=7, stride=conv1_stride, padding=3,
                                bias=False)
         self.bn1 = nn.BatchNorm2d(inplanes)
         self.relu = nn.ReLU(inplace=True)
@@ -327,7 +327,7 @@ def resnet18(output_layers=None, pretrained=False, **kwargs):
     model = ResNet(BasicBlock, [2, 2, 2, 2], output_layers, **kwargs)
 
     if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['resnet18']))
+        model.load_state_dict(model_zoo.load_url(ResNet18_Weights.IMAGENET1K_V2))
     return model
 
 
@@ -344,7 +344,7 @@ def resnet50(output_layers=None, pretrained=False, **kwargs):
 
     model = ResNet(Bottleneck, [3, 4, 6, 3], output_layers, **kwargs)
     if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['resnet50']))
+        model.load_state_dict(model_zoo.load_url(ResNet50_Weights.IMAGENET1K_V2))
     return model
 
 
@@ -361,5 +361,5 @@ def resnet101(output_layers=None, pretrained=False, **kwargs):
 
     model = ResNet(Bottleneck, [3, 4, 23, 3], output_layers, **kwargs)
     if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['resnet101']))
+        model.load_state_dict(model_zoo.load_url(ResNet101_Weights.IMAGENET1K_V2))
     return model

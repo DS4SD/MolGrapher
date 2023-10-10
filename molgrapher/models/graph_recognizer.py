@@ -33,7 +33,7 @@ class GraphRecognizer(pl.LightningModule):
         self.graph_classifier_model_name = graph_classifier_model_name
 
         if self.keypoint_detector_model_name == "":
-            self.keypoint_detector_model_name = "exp-ad-201-run-k10-val_loss=0.0003-v2.ckpt" 
+            self.keypoint_detector_model_name = "kd_model.ckpt" 
             self.keypoint_detector_model_name = os.path.dirname(__file__) + f"/../../data/models/keypoint_detector/" + self.keypoint_detector_model_name
         
         self.keypoint_detector = KeypointDetector.load_from_checkpoint(
@@ -43,11 +43,13 @@ class GraphRecognizer(pl.LightningModule):
             map_location = self.device
         )
         if self.graph_classifier_model_name == "":
-            #self.graph_classifier_model_name = "molgrapher_stereo_model.ckpt"
-            #self.graph_classifier_model_name = "molgrapher_model_gcn.ckpt"
-            self.graph_classifier_model_name = "molgrapher_no_stereo_model.ckpt" 
+            #self.graph_classifier_model_name = "gc_stereo_model.ckpt"
+            #self.graph_classifier_model_name = "gc_gcn_model.ckpt"
+            self.graph_classifier_model_name = "gc_no_stereo_model.ckpt" 
             self.graph_classifier_model_name = os.path.dirname(__file__) + f"/../../data/models/graph_classifier/" + self.graph_classifier_model_name
 
+        print(self.graph_classifier_model_name)
+        print(self.keypoint_detector_model_name)
         self.graph_classifier = GraphClassifier.load_from_checkpoint(
             self.graph_classifier_model_name, 
             config_dataset = config_dataset_graph, 

@@ -12,11 +12,8 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm 
 import cv2
 import shutil 
-import pickle
-from torchvision import transforms
 import torch 
 from more_itertools import chunked
-import glob 
 from PIL import Image 
 
 from molgrapher.models.graph_recognizer import GraphRecognizer
@@ -27,6 +24,7 @@ from molgrapher.utils.utils_dataset import get_bonds_sizes
 from mol_depict.utils.utils_generation import get_abbreviations_smiles_mapping
 from mol_depict.utils.utils_drawing import draw_molecule_rdkit
 from molgrapher.utils.utils_logging import count_model_parameters
+
 
 os.environ["OMP_NUM_THREADS"] = "1" 
 cv2.setNumThreads(0)
@@ -170,7 +168,7 @@ def proceed_batch(args, input_images_paths):
             abbreviations, 
             abbreviations_smiles_mapping, 
             ocr_atoms_classes_mapping, 
-            SpellingCorrector(),
+            SpellingCorrector(abbreviations_smiles_mapping),
             assign_stereo = args.assign_stereo,
             align_rdkit_output = args.align_rdkit_output
         ) 
@@ -197,10 +195,11 @@ def proceed_batch(args, input_images_paths):
             predictions["smiles"].append(None)
             predictions["confidences"][i] = 0
             print("The molecule can not be converted to a valid SMILES")
-
+    
     # Save annotations
     for predicted_smiles, confidence, image_filename, abbreviations in zip(predictions["smiles"], predictions["confidences"], input_images_paths, abbreviations_list):
-        annotation_filename = image_filename.split("/")[1].split(".")[0] + ".jsonl"
+        #annotation_filename = image_filename.split("/")[1].split(".")[0] + ".jsonl"
+        annotation_filename = args.save_mol_folder + "smiles.jsonl"
         with open(annotation_filename, "a") as f:
             if predicted_smiles is not None:
                 if abbreviations != []:
@@ -227,7 +226,7 @@ def proceed_batch(args, input_images_paths):
 
     print("Annotation:")
     print(pd.read_json(path_or_buf = annotation_filename, lines = True))
-
+    
 
     # Visualize predictions
     if visualize:
