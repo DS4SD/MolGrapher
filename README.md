@@ -25,7 +25,7 @@ If you find this repository useful, please consider citing:
 
 Install [MolGrapher](https://github.com/DS4SD/MolGrapher/)
 ```
-conda create -n molgrapher 
+conda create -n molgrapher python=3.9
 bash install_packages.sh
 pip install -e .
 ```
@@ -39,14 +39,16 @@ pip install -e .
 
 ### Model
 
-Models will be available soon.
+Models are available on [Hugging Face](https://huggingface.co/ds4sd/MolGrapher).
+
+After downloading, the folder: `models`, should be placed in: `./data/`.
+Models can be selected by modifying attributes of GraphRecognizer (`./molgrapher/models/graph_recognizer.py`). 
 
 ### Inference
 
 Your input images can be placed in the folder: `./data/benchmarks/default/`.
 ```
-python3 ./molgrapher/scripts/annotate/create_input_json.py
-bash ./molgrapher/scripts/annotate/run_predict.sh
+bash molgrapher/scripts/annotate/run.sh
 ```
 Output predictions are saved in: `./data/predictions/default/`.
 

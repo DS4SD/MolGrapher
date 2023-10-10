@@ -6,9 +6,6 @@ import os
 import multiprocessing
 from tqdm import tqdm
 
-# OCR
-import re
-
 # Images
 import cv2
 from PIL import Image
@@ -109,6 +106,8 @@ class CaptionRemover:
             
         # Run OCR to determine whether or not to apply the mask filter
         result = self.ocr.ocr(self.image)
+        if result == [None]:
+            return self.image
         self.boxes = [line[0] for line in result[0]]
         self.texts = [line[1][0] for line in result[0]]
         self.scores = [line[1][1] for line in result[0]]

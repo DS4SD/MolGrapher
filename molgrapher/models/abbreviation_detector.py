@@ -14,15 +14,12 @@ from PIL import Image
 # OCR
 from paddleocr import PaddleOCR
 from weighted_levenshtein import lev
-import pytesseract
 
 # Python
 import multiprocessing
 from tqdm import tqdm
 import os
 import json 
-import matplotlib.pyplot as plt 
-import re 
 
 # Modules
 from molgrapher.utils.utils_dataset import CaptionRemover, crop_tight

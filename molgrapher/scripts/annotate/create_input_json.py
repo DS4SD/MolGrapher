@@ -8,7 +8,7 @@ import os
 dataset = "default"
 dataset_size = 10000
 image_folder_path = os.path.dirname(__file__) + f"/../../../data/benchmarks/{dataset}/images/"
-output_file_name = f"input_images_paths_{dataset}.jsonl"
+output_file_name = os.path.dirname(__file__) + f"/input_images_paths_{dataset}.jsonl"
 images_filenames = []
 
 for image_filename in glob.glob(image_folder_path + "*"):
