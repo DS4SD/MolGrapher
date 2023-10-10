@@ -1,5 +1,5 @@
 {
-    "experiment_name": "exp-ad-601",
+    "experiment_name": "exp-default",
     "batch_size": 10,
     "nb_workers": 10,
     "num_processes_mp": 10,
@@ -10,7 +10,7 @@
     "nb_sample_benchmarks": [10000],
     "nb_duplicates": 1,
     "nb_sample_fine-tuning": 10,
-    "training_dataset": "cede-synthetic",
+    "training_dataset": "molgrapher-synthetic",
     "benchmarks": ["molgrapher-synthetic"],
     "on_fly": false
 }
