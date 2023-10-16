@@ -6,7 +6,7 @@
     "num_threads_pytorch": 10,
     "image_size": [3, 1024, 1024],
     "nb_atoms_classes": 182,
-    "nb_bonds_classes": 8,
+    "nb_bonds_classes": 6,
     "nb_sample": 1000,
     "nb_duplicates": 1,
     "nb_sample_fine-tuning": 10000,
