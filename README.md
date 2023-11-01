@@ -40,6 +40,12 @@ pip install -e .
 ### Model
 
 Models are available on [Hugging Face](https://huggingface.co/ds4sd/MolGrapher).
+```
+wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/graph_classifier/gc_gcn_model.ckpt
+wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/graph_classifier/gc_no_stereo_model.ckpt
+wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/graph_classifier/gc_stereo_model.ckpt
+wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/keypoint_detector/kd_model.ckpt
+```
 
 After downloading, the folder `models` from Hugging Face should be placed in: `./data/`.
 Models can be selected by modifying attributes of GraphRecognizer (in `./molgrapher/models/graph_recognizer.py`). 
