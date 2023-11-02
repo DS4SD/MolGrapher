@@ -4,14 +4,14 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="graph-recognition",
-    version="0.0.1",
+    name="molgrapher",
+    version="1.0.0",
     author="Lucas Morin",
     author_email="lum@zurich.ibm.com",
     description="A Python library",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.ibm.com/LUM/graph-recognition/",
+    url="https://github.com/DS4SD/MolGrapher",
     packages=setuptools.find_packages(exclude=["tests.*", "tests"]),
     classifiers=[
         "Development Status :: 1 - Planning",

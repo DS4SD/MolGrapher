@@ -53,6 +53,7 @@ bash molgrapher/scripts/annotate/run.sh
 Output predictions are saved in: `./data/predictions/default/`.
 
 By default, molgrapher runs on CPU. This option can be modified in: `./molgrapher/scripts/annotate/run_predict.sh`, changing the flag `--force-cpu` to `--no-force-cpu`.
+The installation steps for running PaddleOCR on GPU may depend on the user system. 
 
 ### USPTO-30K Benchmark
 

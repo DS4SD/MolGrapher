@@ -41,11 +41,12 @@ def get_ocr(force_cpu):
     return ocr 
 
 class CaptionRemover:
-    def __init__(self, config = None, force_cpu = False):
+    def __init__(self, config = None, force_cpu = False, remove_captions=True):
         self.config = config
         self.border_size = 30
         self.ocr = get_ocr(force_cpu = force_cpu)
         self.force_cpu = force_cpu
+        self.remove_captions = remove_captions
 
     def _preprocess_images_process(self, images_filenames):
         pil_images = []
@@ -57,12 +58,13 @@ class CaptionRemover:
                 (self.config["image_size"][1], self.config["image_size"][1]), 
                 border_size = self.border_size
             )
-        
-            # Remove captions (95% of the dataloading time)
-            image = self(pil_image)
             
+            if self.remove_captions:
+                # Remove captions (95% of the dataloading time)
+                image = self(pil_image)
+                pil_image = Image.fromarray(image).convert('RGB')
+
             # Remove borders
-            pil_image = Image.fromarray(image).convert('RGB')
             pil_image = crop_tight(pil_image)
             
             # Resize, add small borders 
@@ -75,22 +77,7 @@ class CaptionRemover:
         return pil_images
 
     def preprocess_images(self, images_filenames):
-        if self.force_cpu:
-            if len(images_filenames) < self.config["num_processes_mp"]:
-                print("Caption Remover warning: Too much processes")
-            images_filenames_split = np.array_split(images_filenames, self.config["num_processes_mp"])
-            args = [[images_filenames_split[process_index]] for process_index in range(self.config["num_processes_mp"])]
-            pool = multiprocessing.Pool(self.config["num_processes_mp"])
-            pil_images_processes = pool.starmap(self._preprocess_images_process, args)
-            pool.close()
-            pool.join()
-
-            pil_images = []
-            for index in range(self.config["num_processes_mp"]):
-                pil_images.extend(pil_images_processes[index])  
-            return pil_images
-        else:
-            return self._preprocess_images_process(images_filenames)
+        return self._preprocess_images_process(images_filenames)
    
     def __call__(self, pil_image):
         """

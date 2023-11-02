@@ -77,7 +77,8 @@ def proceed_batch(args, input_images_paths):
         dataset_class = ImageDataset,
         images_folder_path = None,
         images_paths = input_images_paths,
-        force_cpu = args.force_cpu
+        force_cpu = args.force_cpu,
+        remove_captions = args.remove_captions
     )
     data_module.setup_images_benchmarks()
     if preprocess:
@@ -290,6 +291,7 @@ def main():
     parser.add_argument('--chunk-size', type = int, default = 200)
     parser.add_argument('--assign-stereo', action = argparse.BooleanOptionalAction, default = True, required = False)
     parser.add_argument('--align-rdkit-output', type = bool, default = False)
+    parser.add_argument('--remove-captions', action = argparse.BooleanOptionalAction, default = True, required = False)
     parser.add_argument('--save-mol-folder', type = str, default = "")
     parser.add_argument('--config-dataset-graph-path', type = str, default = os.path.dirname(__file__) + "/../../../data/config_dataset_graph_2.json")
     parser.add_argument('--config-training-graph-path', type = str, default = os.path.dirname(__file__) + "/../../../data/config_training_graph.json")
