@@ -157,6 +157,14 @@ def proceed_batch(args, input_images_paths):
     abbreviations_list = abbreviation_detector.mp_run(images_filenames, predictions["graphs"], bonds_sizes)
     print(f"Abbreviation Recognition completed in {round(time() - ref_t, 2)}")
 
+    # Recognize stereochemistry
+    if args.assign_stereo:
+        print(f"Starting Stereochemistry Recognition")
+        ref_t = time()
+        stereochemistry_recognizer = StereochemistryRecognizer(config_dataset_graph)
+        predictions["graphs"] = stereochemistry_recognizer(images, predictions["graphs"], bonds_sizes)
+        print(f"Stereochemistry Recognition completed in {round(time() - ref_t, 2)}")
+
     # Create RDKit graph
     print("Starting Graph creation")
     ref_t = time()
