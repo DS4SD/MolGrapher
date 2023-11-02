@@ -297,10 +297,11 @@ class AbbreviationDetector:
                 result = self.ocr.ocr(self.letters[i]*255, det = True, rec = True, cls = False)
                 result = result[0]
                 box = self.boxes[i]
-                for line in result:
-                    new_boxes.append(self.transform_box(line[0], box))
-                    texts.append(line[1][0])
-                    scores.append(line[1][1])
+                if result:
+                    for line in result:
+                        new_boxes.append(self.transform_box(line[0], box))
+                        texts.append(line[1][0])
+                        scores.append(line[1][1])
 
         return self.image, texts, scores, new_boxes, 
         

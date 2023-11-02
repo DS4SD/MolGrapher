@@ -49,7 +49,8 @@ class DataModule(pl.LightningDataModule):
         dataset_evaluate = False,
         dataset_predict = True,
         force_cpu = False,
-        taa_step = None
+        taa_step = None,
+        remove_captions = True
     ):
         super().__init__()
         self.config = config
@@ -68,6 +69,7 @@ class DataModule(pl.LightningDataModule):
         self.dataset_predict = dataset_predict
         self.force_cpu = force_cpu
         self.taa_step = taa_step
+        self.remove_captions = remove_captions
 
         print("Data module configuration:")
         pprint(self.config)
@@ -675,7 +677,7 @@ class DataModule(pl.LightningDataModule):
     def preprocess(self):
         from molgrapher.utils.utils_dataset import CaptionRemover
         for benchmark_dataset in self.benchmarks_datasets:
-            self.caption_remover = CaptionRemover(self.config)
+            self.caption_remover = CaptionRemover(self.config, force_cpu=self.force_cpu, remove_captions=self.remove_captions)
             preprocessed_images = self.caption_remover.preprocess_images(benchmark_dataset.dataset["image_filename"])
             benchmark_dataset.preprocessed = True
 

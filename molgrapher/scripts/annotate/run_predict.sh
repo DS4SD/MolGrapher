@@ -9,5 +9,6 @@ python3 "$parent_path"/predict_molgrapher.py \
     --num-processes-mp 10 \
     --chunk-size 10000 \
     --save-mol-folder "$parent_path"/../../../data/predictions/molgrapher/default/ \
-    --no-assign-stereo 
+    --no-assign-stereo \
+    --no-remove-captions
     
