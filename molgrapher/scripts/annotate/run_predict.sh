@@ -10,5 +10,5 @@ python3 "$parent_path"/predict_molgrapher.py \
     --chunk-size 10000 \
     --save-mol-folder "$parent_path"/../../../data/predictions/molgrapher/default/ \
     --no-assign-stereo \
-    --no-remove-captions
+    --remove-captions
     
