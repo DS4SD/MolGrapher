@@ -57,7 +57,9 @@ def proceed_batch(args, input_images_paths):
             os.makedirs(args.save_mol_folder)
     
     # Automatically set CPU/GPU device
-    args.force_cpu = not(torch.cuda.is_available())
+    if not(args.force_cpu):
+        args.force_cpu = not(torch.cuda.is_available())
+    print(f"PyTorch device: {'gpu' if not(args.force_cpu) else 'cpu'}")
 
     # Read config file
     with open(args.config_dataset_graph_path) as file:
