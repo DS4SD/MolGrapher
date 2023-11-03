@@ -55,7 +55,10 @@ def proceed_batch(args, input_images_paths):
             shutil.rmtree(args.save_mol_folder)
         if not os.path.exists(args.save_mol_folder):
             os.makedirs(args.save_mol_folder)
-            
+    
+    # Automatically set CPU/GPU device
+    args.force_cpu = not(torch.cuda.is_available())
+
     # Read config file
     with open(args.config_dataset_graph_path) as file:
         config_dataset_graph = json.load(file)
