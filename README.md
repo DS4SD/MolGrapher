@@ -37,6 +37,16 @@ cd MolDepictor
 pip install -e .
 ```
 
+Install PaddleOCR on CPU
+```
+python3.9 -m pip install paddleocr paddlepaddle 
+```
+
+Install PaddleOCR on GPU (Tested on x86_64, Linux Ubuntu 20.04, CUDA 11.7, cuDNN 8)
+```
+bash install_paddleocr_gpu.sh
+```
+
 ### Model
 
 Models are available on [Hugging Face](https://huggingface.co/ds4sd/MolGrapher).
