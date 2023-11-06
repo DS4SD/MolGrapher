@@ -10,7 +10,7 @@ python3.9 -m pip install scikit-learn seaborn timm mahotas more_itertools \
     rouge-score opencv-python albumentations torchsummary weighted-levenshtein \
     pytesseract shapely datasets
 
-# Install PaddleµOCR
+# Install PaddleOCR
 python3.9 -m pip install paddleocr paddlepaddle 
 
 # For benchmarking, set up OSRA, Imago, MolVec, DECIMER, Img2Mol, MolScribe, CEDe
