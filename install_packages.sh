@@ -9,3 +9,6 @@ python3.9 -m pip install scikit-learn seaborn timm mahotas more_itertools \
     rdkit-pypi CairoSVG SmilesPE python-Levenshtein nltk ipykernel ipython \
     rouge-score opencv-python albumentations torchsummary weighted-levenshtein \
     pytesseract shapely datasets
+
+# On Mac M1, mahotas should be installed using conda 
+# conda install -c https://conda.anaconda.org/conda-forge mahotas
