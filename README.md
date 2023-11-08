@@ -37,14 +37,15 @@ cd MolDepictor
 pip install -e .
 ```
 
-Install PaddleOCR on CPU
+Install [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR)
+On CPU,
 ```
-python3.9 -m pip install paddleocr paddlepaddle 
+bash install_paddleocr.sh -d 'cpu'
 ```
 
-Install PaddleOCR on GPU (Tested on x86_64, Linux Ubuntu 20.04, CUDA 11.7, cuDNN 8)
+On GPU (tested on x86_64, Linux Ubuntu 20.04, CUDA 11.7),
 ```
-bash install_paddleocr_gpu.sh
+bash install_paddleocr.sh -d 'gpu'
 ```
 
 ### Model
