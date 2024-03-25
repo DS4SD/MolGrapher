@@ -40,13 +40,13 @@ def install_paddle(package: str, version: str = ''):
     """
     python_version = "311"
     cuda_version = "117"
+    cuda_version_with_point = "11.7"
     cudnn_version = "8.4.1"
     return ''.join([
         f'{package} @ https://paddle-wheel.bj.bcebos.com/',
         f'{version}/linux/',
-        f'linux-gpu-cuda{cuda_version}-cudnn{cudnn_version}-mkl-gcc8.2-avx/',
-        f'paddlepaddle_gpu-{package}.post{cuda_version}-cp{python_version}-cp{python_version}-linux_x86_64.whl'
-       
+        f'linux-gpu-cuda{cuda_version_with_point}-cudnn{cudnn_version}-mkl-gcc8.2-avx/',
+        f'paddlepaddle_gpu-{version}.post{cuda_version}-cp{python_version}-cp{python_version}-linux_x86_64.whl'
     ])
 
 with open("README.md", "r") as fh:
