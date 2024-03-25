@@ -63,10 +63,10 @@ setuptools.setup(
     description="A Python library",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.ibm.com/LUM/graph-recognition/",
+    url="https://github.com/DS4SD/MolGrapher",
     packages=setuptools.find_packages(exclude=["tests.*", "tests"]),
     install_requires=[
-        "mol-depict @ git+ssh://git@github.ibm.com/LUM/molecule-depictor.git",
+        "mol-depict @ git+ssh://git@github.com/DS4SD/MolDepictor.git",
         "pytorch-lightning==2.1.3",
         "torch_geometric==2.4.0",
         "scikit-learn",
