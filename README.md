@@ -23,39 +23,30 @@ If you find this repository useful, please consider citing:
 
 ### Installation
 
-Install [MolGrapher](https://github.com/DS4SD/MolGrapher/)
+Create a virtual environment.
 ```
-conda create -n molgrapher python=3.9
-bash install_packages.sh
-pip install -e .
+conda create -n molgrapher python=3.11
+conda activate molgrapher
 ```
-
-Install [MolDepictor](https://github.com/DS4SD/MolDepictor/)
+Install [MolGrapher](https://github.com/DS4SD/MolGrapher/) and [MolDepictor](https://github.com/DS4SD/MolDepictor/) for CPU.
 ```
-git clone https://github.com/DS4SD/MolDepictor.git
-cd MolDepictor
-pip install -e .
+pip install -e .["cpu"]
 ```
 
-Install [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR)
-On CPU,
+Install [MolGrapher](https://github.com/DS4SD/MolGrapher/) and [MolDepictor](https://github.com/DS4SD/MolDepictor/) for GPU. (Tested for x86_64, Linux Ubuntu 20.04, CUDA 11.7, CUDNN 8.4)
 ```
-bash install_paddleocr.sh -d 'cpu'
+pip install -e .["gpu"]
 ```
-
-On GPU (tested on x86_64, Linux Ubuntu 20.04, CUDA 11.7),
-```
-bash install_paddleocr.sh -d 'gpu'
-```
+CUDA and CDNN versions can be edited in `setup.py`.
 
 ### Model
 
 Models are available on [Hugging Face](https://huggingface.co/ds4sd/MolGrapher).
 ```
-wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/graph_classifier/gc_gcn_model.ckpt
-wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/graph_classifier/gc_no_stereo_model.ckpt
-wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/graph_classifier/gc_stereo_model.ckpt
-wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/keypoint_detector/kd_model.ckpt
+wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/graph_classifier/gc_gcn_model.ckpt -P ./data/models/graph_classifier/
+wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/graph_classifier/gc_no_stereo_model.ckpt -P ./data/models/graph_classifier/
+wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/graph_classifier/gc_stereo_model.ckpt -P ./data/models/graph_classifier/
+wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/keypoint_detector/kd_model.ckpt -P ./data/models/keypoint_detector/
 ```
 
 After downloading, the folder `models` from Hugging Face should be placed in: `./data/`.
