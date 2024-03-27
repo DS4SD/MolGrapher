@@ -52,9 +52,6 @@ def install_paddle(package: str, version: str = ''):
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-print(install_torch('torch', '2.1.2', cpu=True))
-
-
 setuptools.setup(
     name="molgrapher",
     version="1.0.0",
