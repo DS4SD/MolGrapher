@@ -87,8 +87,8 @@ class GNN(nn.Module):
         if self.gcn_on:
             # graph_classifier_model_name = "exp-ad-11-run-mp-4-64-02-val_loss=0.0086"
             self.nb_filters_out = node_embedding_dimension//8
-            self.conv1 = GCNConv(self.node_embedding_dimension, self.node_embedding_dimension//8)
-            self.conv2 = GCNConv(self.node_embedding_dimension//8, self.node_embedding_dimension//8)
+            self.conv1 = GCNConv(self.node_embedding_dimension, self.node_embedding_dimension//4)
+            self.conv2 = GCNConv(self.node_embedding_dimension//4, self.node_embedding_dimension//8)
             self.conv3 = GCNConv(self.node_embedding_dimension//8, self.node_embedding_dimension//8)
             self.conv4 = GCNConv(self.node_embedding_dimension//8, self.nb_filters_out)
             self.relu = nn.ReLU()
