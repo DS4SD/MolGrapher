@@ -16,7 +16,7 @@ import torch
 from more_itertools import chunked
 from PIL import Image 
 
-from molgrapher.models.graph_recognizer import GraphRecognizer
+from molgrapher.models.graph_recognizer import GraphRecognizer, StereochemistryRecognizer
 from molgrapher.models.abbreviation_detector import AbbreviationDetectorCPU, AbbreviationDetectorGPU, SpellingCorrector
 from molgrapher.datasets.dataset_image import ImageDataset
 from molgrapher.data_modules.data_module import DataModule
