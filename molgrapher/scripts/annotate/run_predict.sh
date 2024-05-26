@@ -8,7 +8,7 @@ python3 "$parent_path"/predict_molgrapher.py \
     --num-threads-pytorch 10 \
     --num-processes-mp 10 \
     --chunk-size 10000 \
-    --save-mol-folder "$parent_path"/../../../data/predictions/molgrapher/default/ \
+    --save-mol-folder "$parent_path"/../../../data/predictions/default/ \
     --no-assign-stereo \
     --remove-captions
     
