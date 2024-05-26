@@ -87,8 +87,8 @@ class GNN(nn.Module):
         if self.gcn_on:
             # graph_classifier_model_name = "exp-ad-11-run-mp-4-64-02-val_loss=0.0086"
             self.nb_filters_out = node_embedding_dimension//8
-            self.conv1 = GCNConv(self.node_embedding_dimension, self.node_embedding_dimension//8)
-            self.conv2 = GCNConv(self.node_embedding_dimension//8, self.node_embedding_dimension//8)
+            self.conv1 = GCNConv(self.node_embedding_dimension, self.node_embedding_dimension//4)
+            self.conv2 = GCNConv(self.node_embedding_dimension//4, self.node_embedding_dimension//8)
             self.conv3 = GCNConv(self.node_embedding_dimension//8, self.node_embedding_dimension//8)
             self.conv4 = GCNConv(self.node_embedding_dimension//8, self.nb_filters_out)
             self.relu = nn.ReLU()
@@ -174,6 +174,7 @@ class GraphClassifier(pl.LightningModule):
         if self.type_embedding:
             self.atom_type_embedding = nn.Parameter(torch.randn(self.node_embedding_dimension))
             self.bond_type_embedding = nn.Parameter(torch.randn(self.node_embedding_dimension))
+        
         """
         # Load classes weights
         with open(os.path.dirname(__file__) + f"/../../data/classes_weights/{self.config_dataset['experiment_name']}_atoms_weights.json") as file:
@@ -181,10 +182,15 @@ class GraphClassifier(pl.LightningModule):
         with open(os.path.dirname(__file__) + f"/../../data/classes_weights/{self.config_dataset['experiment_name']}_bonds_weights.json") as file:
             bonds_weights = torch.tensor(list(json.load(file).values()), dtype=torch.float32)     
         """
+
         # Loss for single-label, multi-class classification
-        self.criterion_atoms = nn.CrossEntropyLoss()#weight = atoms_weights)
-        self.criterion_bonds = nn.CrossEntropyLoss()#weight=torch.tensor([1., 1., 1., 1., 1.])) #weight = bonds_weights) 
-        
+        if self.gnn.gcn_on:
+            self.criterion_atoms = nn.CrossEntropyLoss()#weight = atoms_weights)
+            self.criterion_bonds = nn.CrossEntropyLoss(weight=torch.tensor([1., 1., 1., 1., 1.])) #weight = bonds_weights) 
+        else:
+            self.criterion_atoms = nn.CrossEntropyLoss()
+            self.criterion_bonds = nn.CrossEntropyLoss()
+
         self.loss_atoms_weight = 1
         # A random predictor has an atom loss 3 times greater than its bond loss.
         # In average, during inference, a molecule has 3 times more bonds predictions than atoms predictions. (counting decoy proposals)
