@@ -52,9 +52,6 @@ def install_paddle(package: str, version: str = ''):
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-print(install_torch('torch', '2.1.2', cpu=True))
-
-
 setuptools.setup(
     name="molgrapher",
     version="1.0.0",
@@ -66,7 +63,7 @@ setuptools.setup(
     url="https://github.com/DS4SD/MolGrapher",
     packages=setuptools.find_packages(exclude=["tests.*", "tests"]),
     install_requires=[
-        "mol-depict @ git+ssh://git@github.com/DS4SD/MolDepictor.git",
+        "mol-depict @ git+https://git@github.com/DS4SD/MolDepictor.git",
         "pytorch-lightning==2.1.3",
         "torch_geometric==2.4.0",
         "scikit-learn",
