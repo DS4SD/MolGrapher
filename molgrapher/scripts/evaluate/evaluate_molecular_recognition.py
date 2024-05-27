@@ -65,7 +65,7 @@ def main():
     clean_only = False
     filtered_evaluation = False
     filtered_no_charges_evaluation = False
-    preprocess = False
+    preprocess = True
     # Save
     saved_predictions = False
     saved_abbreviations = False
