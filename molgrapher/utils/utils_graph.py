@@ -878,7 +878,7 @@ class MolecularGraph():
                 if atom_idx not in atoms_involved_in_connections:
                     removed_atom_indices.append(atom_idx)
             removed_atom_indices = sorted(removed_atom_indices, reverse = True)
-            print("Atom indices to remove:" + str(removed_atom_indices))
+            #print("Atom indices to remove:" + str(removed_atom_indices))
             if len(removed_atom_indices):
                 for bond_idx in range(len(self.bonds)):
                     # Remove bonds connected to removed atoms
