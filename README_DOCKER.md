@@ -20,7 +20,7 @@ docker run -it --shm-size=2g molgrapher bash
 
 Run MolGrapher
 ```
-bash molgrapher/scripts/annotate/run.sh
+bash run.sh
 ```
 
 Read predictions
