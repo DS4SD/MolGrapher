@@ -25,5 +25,5 @@ bash run.sh
 
 Read predictions
 ```
-less data/predictions/default/smiles.jsonl
+less ../../../data/predictions/default/smiles.jsonl
 ```
