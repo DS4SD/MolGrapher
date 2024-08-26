@@ -39,6 +39,8 @@ pip install -e .["gpu"]
 ```
 CUDA and CDNN versions can be edited in `setup.py`.
 
+To install and run MolGrapher using Docker, please refer to [README_DOCKER.md](https://github.com/DS4SD/MolGrapher/blob/main/README_DOCKER.md).
+
 ### Model
 
 Models are available on [Hugging Face](https://huggingface.co/ds4sd/MolGrapher).
