@@ -13,7 +13,7 @@ bash docker_build.sh
 
 ### Run MolGrapher via Docker 
 
-Copy the images to process to `data/benchmarks/default/images/`.
+Copy the images to process to `./data/benchmarks/default/images/`.
 
 Run the image interactively
 ```
