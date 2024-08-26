@@ -13,6 +13,8 @@ bash docker_build.sh
 
 ### Run MolGrapher via Docker 
 
+Copy the images to process to `data/benchmarks/default/images`.
+
 Run the image interactively
 ```
 docker run -it --shm-size=2g molgrapher bash
