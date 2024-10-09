@@ -74,7 +74,6 @@ setuptools.setup(
         "rdkit==2023.09.5",
         "CairoSVG",
         "SmilesPE",
-        "python-Levenshtein",
         "nltk",
         "ipykernel",
         "ipython",
