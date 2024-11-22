@@ -55,7 +55,7 @@ wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/keypoint_detect
 ```
 
 After downloading, the folder `models` from Hugging Face should be placed in: `./data/`.
-Models can be selected by modifying attributes of GraphRecognizer (in `./molgrapher/models/graph_recognizer.py`).  NOTE: changing among the models requires multiple steps as detailed in this [issue](https://github.com/DS4SD/MolGrapher/issues/6#issuecomment-2132380848).
+Models can be selected by modifying attributes of GraphRecognizer in `./molgrapher/models/graph_recognizer.py` (The steps to follow are detailed in this [issue](https://github.com/DS4SD/MolGrapher/issues/6#issuecomment-2132380848)).
 
 ### Inference
 
