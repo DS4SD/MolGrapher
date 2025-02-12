@@ -71,7 +71,7 @@ Output predictions are saved in: `./data/predictions/default/`.
 from molgrapher.models.molgrapher_model import MolgrapherModel
 
 model = MolgrapherModel()
-input_images_paths = [p for p in glob.glob("./data/benchmarks/default/")]
+input_images_paths = ["./data/benchmarks/default/images/image_0.png"]
 annotations = model.predict_batch(input_images_paths)  
 ```
 
