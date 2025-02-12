@@ -2,6 +2,8 @@
 
 [![Huggingface](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-USPTO%0A30K-blue)](https://huggingface.co/datasets/ds4sd/USPTO-30K/)
 [![Huggingface](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-MolGrapher%0ASynthetic%0A300K-blue)](https://huggingface.co/datasets/ds4sd/MolGrapher-Synthetic-300K)
+[![arXiv](https://img.shields.io/badge/arXiv-2308.12234-919191.svg)](https://doi.org/10.48550/arXiv.2308.12234)
+[![ICCV](https://img.shields.io/badge/Paper-iccv51070.2023.01791-b31b1b.svg)](https://openaccess.thecvf.com/content/ICCV2023/html/Morin_MolGrapher_Graph-based_Visual_Recognition_of_Chemical_Structures_ICCV_2023_paper.html)
 
 This is the repository for [MolGrapher: Graph-based Visual Recognition of Chemical Structures](https://openaccess.thecvf.com/content/ICCV2023/html/Morin_MolGrapher_Graph-based_Visual_Recognition_of_Chemical_Structures_ICCV_2023_paper.html).
 
@@ -40,6 +42,8 @@ pip install -e .["gpu"]
 ```
 CUDA and CDNN versions can be edited in `setup.py`.
 
+To install and run MolGrapher using Docker, please refer to [README_DOCKER.md](https://github.com/DS4SD/MolGrapher/blob/main/README_DOCKER.md).
+
 ### Model
 
 Models are available on [Hugging Face](https://huggingface.co/ds4sd/MolGrapher).
@@ -51,7 +55,7 @@ wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/keypoint_detect
 ```
 
 After downloading, the folder `models` from Hugging Face should be placed in: `./data/`.
-Models can be selected by modifying attributes of GraphRecognizer (in `./molgrapher/models/graph_recognizer.py`). 
+Models can be selected by modifying attributes of GraphRecognizer in `./molgrapher/models/graph_recognizer.py` (The steps to follow are detailed in this [issue](https://github.com/DS4SD/MolGrapher/issues/6#issuecomment-2132380848)).
 
 ### Inference
 

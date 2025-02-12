@@ -595,7 +595,7 @@ class DataModule(pl.LightningDataModule):
             self.benchmarks_datasets.append(self.dataset_class(dataset, config=self.config, train=False, predict=True, evaluate=self.dataset_evaluate))
 
     def setup_molfiles_benchmarks_static(self, benchmark, nb_sample_benchmark):
-        min_index = 2500
+        min_index = 0
         molfiles_filenames = []
         images_filenames = []
         images_folder_path = os.path.dirname(__file__) + "/../../data/benchmarks/" + benchmark + "/images/"
