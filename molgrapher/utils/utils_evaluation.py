@@ -3,7 +3,6 @@
 
 from rdkit import Chem, DataStructs
 from rdkit.Chem.Draw import rdMolDraw2D
-import Levenshtein 
 from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
 from rouge_score import rouge_scorer
 from collections import defaultdict
@@ -184,11 +183,12 @@ def compute_molecule_prediction_quality(predicted_smiles, gt_smiles, predicted_m
     if Chem.MolFromSmiles(predicted_smiles) is None:
         return scores
 
-    # Levenshtein distance
-    levenshtein = Levenshtein.distance(predicted_smiles, gt_smiles)
-    scores["levenshtein"] = levenshtein
-    if levenshtein == 0:
-        scores["levenshtein0"] = True
+    # Levenshtein distance 
+    # import Levenshtein 
+    # levenshtein = Levenshtein.distance(predicted_smiles, gt_smiles)
+    # scores["levenshtein"] = levenshtein
+    # if levenshtein == 0:
+    #     scores["levenshtein0"] = True
     
     # Tanimoto score 
     if not predicted_molecule:
