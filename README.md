@@ -22,9 +22,7 @@ If you find this repository useful, please consider citing:
     pages = {19552-19561}
 }
 ```
-Publication in [ICCV](https://openaccess.thecvf.com/content/ICCV2023/html/Morin_MolGrapher_Graph-based_Visual_Recognition_of_Chemical_Structures_ICCV_2023_paper.html) (DOI: https://doi.org/10.1109/iccv51070.2023.01791)
-
-Publication in [Arxiv](https://arxiv.org/abs/2308.12234) (DOI: https://doi.org/10.48550/arXiv.2308.12234)
+Links: [ICCV](https://openaccess.thecvf.com/content/ICCV2023/html/Morin_MolGrapher_Graph-based_Visual_Recognition_of_Chemical_Structures_ICCV_2023_paper.html), [Arxiv](https://arxiv.org/abs/2308.12234) 
 
 ### Installation
 
