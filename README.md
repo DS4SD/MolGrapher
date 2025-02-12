@@ -92,12 +92,12 @@ annotations = model.predict_batch(input_images_paths)
 ```
 
 ### Docling integration
-[Docling](https://github.com/DS4SD/docling) can extract the content and structure from PDF documents. It recognizes page layout, reading order, table structure, code, formulas, and classify images. 
+[Docling](https://github.com/DS4SD/docling) is a toolkit to extract the content and structure from PDF documents. It recognizes page layout, reading order, table structure, code, formulas, and classify images. 
 Here, we combine `docling` and `MolGrapher`: 
 - `Docling` segments and classify chemical-structure images from document pages,
 - `MolGrapher` converts images to SMILES.
 
-Install [docling](https://github.com/DS4SD/docling) in the `molgrapher` environment.
+Install `docling` in the `molgrapher` environment.
 ```
 pip install docling
 ```
