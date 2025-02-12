@@ -79,8 +79,8 @@ annotations = model.predict_batch(input_images_paths)
 ```
 [
     {
-        'smi': '[H]N1CCN(CC2=CC=C(Cl)N=C2)C1=N[N+](=O)[O-]',  # MolGrapher SMILES prediction
-        'conf': 0.997,                                        # MolGrapher confidence
+        'smi': 'O=C(O)C1=CC=C(C2=C(...',                      # MolGrapher SMILES prediction
+        'conf': 0.991,                                        # MolGrapher confidence
         'file-info': {
             'filename': '...',                                # Input image filename
             'image_nbr': 1       
