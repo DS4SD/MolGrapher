@@ -1,23 +1,24 @@
 import os
 import math
 import json 
+from pprint import pprint 
+import copy
+import time
+from collections import defaultdict
 from matplotlib import colors as mcolors
 import torch
 import torch_geometric
 from torch_geometric.data import Data
 import networkx as nx
 from rdkit import Chem
-from rdkit.Chem import rdDepictor
-import math
-from collections import defaultdict, Counter
-import copy
-from rdkit.Geometry.rdGeometry import Point3D
+import time 
 
-from molgrapher.utils.utils_postprocessing import assign_stereo_centers
+from molgrapher.utils.utils_postprocessing import GraphPostprocessor
+from mol_depict.utils.utils_drawing import draw_molecule_rdkit
 
 
 class MolecularGraph():
-    def __init__(self, config_dataset_graph):
+    def __init__(self, config_dataset_graph, filename_logging=""):
         """
         Generic graph structure to ease conversions.
             - Atoms: Molecule's atoms.
@@ -26,22 +27,20 @@ class MolecularGraph():
             - Edge: Graph's edges.
             - Data: Pytorch Geometric graph structure
         """
-        # Core of the class, carry information
-        self.atoms = [] # Constraint: atoms indices is a continuous sequence 0, 1, 2, ..., N
-        self.bonds = [] # A bond indices [b, e] correspond to positions in the self.atoms list (+1)
-
+        self.atoms = []                 
+        self.bonds = []
         self.nodes = []
         self.edges = []
         self.data_nodes_only = None
         self.data = None
         self.bond_size = 0
         self.config_dataset_graph = config_dataset_graph
-        self.superatoms = []
         self.symbols_classes_atoms = json.load(open(os.path.dirname(__file__) + f"/../../data/vocabularies/vocabulary_atoms_{config_dataset_graph['nb_atoms_classes']}.json"))
         self.types_classes_bonds = json.load(open(os.path.dirname(__file__) + f"/../../data/vocabularies/vocabulary_bonds_{config_dataset_graph['nb_bonds_classes']}.json"))
         self.atoms_classes_symbols = {v: k for k,v in self.symbols_classes_atoms.items()}
         self.bonds_classes_types = {v: k for k,v in self.types_classes_bonds.items()}
-
+        self.filename_logging = filename_logging
+        
     def from_cede(self, annotation, keypoints):
         atom_index = 0
         bond_index = 0
@@ -105,16 +104,18 @@ class MolecularGraph():
 
         # Set wedge bonds
         #rdDepictor.Compute2DCoords(molecule)
-        Chem.WedgeMolBonds(molecule, molecule.GetConformers()[0]) 
+        Chem.WedgeMolBonds(molecule, molecule.GetConformers()[0]) # Maybe it is the problem (?)
 
         # Read atoms
         for atom_index, atom in enumerate(molecule.GetAtoms()):
             if atom.HasProp("_displayLabel"):
+                # Probably unecessary
                 atom.SetAtomicNum(0)
 
             keypoint = keypoints[atom_index]
             atom_symbol = atom.GetSymbol()
             if atom_symbol == "*":
+                # Probably uncessary
                 atom_symbol = "R"
             elif atom.GetFormalCharge():
                 atom_symbol = atom.GetSymbol() + "," + str(atom.GetFormalCharge())
@@ -336,7 +337,6 @@ class MolecularGraph():
             nx.draw_networkx_labels(networkx_graph, positions, labels=nodes_display_labels, font_color='black', font_size=10, ax=axis)
             nx.draw_networkx_edge_labels(networkx_graph, positions, edge_labels=edges_display_labels, font_color='black', font_size=7, ax=axis, bbox=dict(facecolor='red', alpha=0))
         
-
     def from_predictions_nodes_only(self, predicted_atoms_classes, predicted_bonds_classes, data_nodes_only, remove_none_predictions=True):
     
         atoms_indices = [i for i, type in enumerate(data_nodes_only.nodes_types) if type == 1]
@@ -420,34 +420,28 @@ class MolecularGraph():
             self.set_nodes_edges_nodes_only()
             data = self.to_torch_nodes_only()
             return self
+        
+    def get_data(self):
+        return self.data
 
-    def needs_abbreviations_detection(self):
-        for atom in self.atoms:
-            atom_symbol = self.atoms_classes_symbols[atom["class"]]
-            if atom_symbol == "R":
-                return True
-        return False
-
-    def try_sanitize_molecule(self, molecule):
-        try:
-            Chem.SanitizeMol(molecule, sanitizeOps=Chem.SanitizeFlags.SANITIZE_KEKULIZE)
-            return molecule
-        except:
-            print("The predicted molecule can not be sanitized")
-            return False
-
-    def to_rdkit(
-        self, 
-        abbreviations, 
-        abbreviations_smiles_mapping, 
-        ocr_atoms_classes_mapping, 
-        spelling_corrector, 
-        stop=False, 
-        align_rdkit_output=False, 
-        assign_stereo=False
-        ):
-
-        molecule = Chem.RWMol()
+    def get_neighbors(self, atom):
+        neighbors = []
+        for bond in self.bonds:
+            b, e = bond["index"]
+            if atom["index"] == b:
+                neighbors.append(self.atoms[e])
+            if atom["index"] == e:
+                neighbors.append(self.atoms[b])
+        return neighbors
+    
+    def get_neighboring_bonds_from_atom(self, atom_index):
+        neighbors = []
+        for bond in self.bonds:
+            if (atom_index == bond["index"][0]) or (atom_index == bond["index"][1]):
+                neighbors.append(bond)
+        return neighbors
+    
+    def add_rdkit_atoms(self, molecule):
         for atom in self.atoms:
             atom_symbol = self.atoms_classes_symbols[atom["class"]]
 
@@ -467,7 +461,9 @@ class MolecularGraph():
                 continue
 
             molecule.AddAtom(Chem.Atom(atom_symbol))
-            
+        return molecule 
+    
+    def add_rdkit_bonds(self, molecule, assign_stereo): 
         map = {
             "SINGLE": Chem.rdchem.BondType.SINGLE,
             "DOUBLE": Chem.rdchem.BondType.DOUBLE,
@@ -476,8 +472,7 @@ class MolecularGraph():
             "DASHED": Chem.rdchem.BondType.SINGLE,
             "SOLID": Chem.rdchem.BondType.SINGLE
         }
-        
-        need_update_stereo = False
+        needs_update_stereo = False
         bonds_directions = [[], []]
         for ib, bond in enumerate(self.bonds):
             if assign_stereo and isinstance(bond["class"], str):
@@ -486,432 +481,100 @@ class MolecularGraph():
                     begin_index = bond["index"][0]
                     end_index = bond["index"][1]
                     molecule.AddBond(begin_index, end_index, map["SINGLE"])
-
                     bonds_directions[0].append((begin_index, end_index))
                     bonds_directions[1].append("DASHED")
-                    need_update_stereo = True
-
+                    needs_update_stereo = True
                 elif bond_type == "DASHED-DOWN":
                     begin_index = bond["index"][0]
                     end_index = bond["index"][1]
                     molecule.AddBond(end_index, begin_index, map["SINGLE"])
-
                     bonds_directions[0].append((end_index, begin_index))
                     bonds_directions[1].append("DASHED")
-                    need_update_stereo = True
-                
+                    needs_update_stereo = True
                 elif bond_type == "SOLID-UP":
                     begin_index = bond["index"][0]
                     end_index = bond["index"][1]
                     molecule.AddBond(begin_index, end_index, map["SINGLE"])
-
                     bonds_directions[0].append((begin_index, end_index))
                     bonds_directions[1].append("SOLID")
-                    need_update_stereo = True
-
+                    self.needs_update_stereo = True
                 elif bond_type == "SOLID-DOWN":
                     begin_index = bond["index"][0]
                     end_index = bond["index"][1]
                     molecule.AddBond(end_index, begin_index, map["SINGLE"])
-
                     bonds_directions[0].append((end_index, begin_index))
                     bonds_directions[1].append("SOLID")
-                    need_update_stereo = True
-
+                    needs_update_stereo = True
             elif isinstance(bond["class"], str):    
                 begin_index = bond["index"][0]
                 end_index = bond["index"][1]
                 molecule.AddBond(begin_index, end_index, map["SINGLE"])
-
             else:
                 bond_type = self.bonds_classes_types[bond["class"]]
                 begin_index = bond["index"][0]
                 end_index = bond["index"][1]
                 molecule.AddBond(begin_index, end_index, map[bond_type])
+            
+        return molecule, needs_update_stereo, bonds_directions
+    
+    def get_atom_with_rdkit_idx(self, index):
+        return self.atoms[index], index
 
+    def remove_atom_with_rdkit_idx(self, atom_index_rdkit):
+        # Get graph atom
+        _, atom_index = self.get_atom_with_rdkit_idx(atom_index_rdkit)
+        
+        # Remove atom
+        self.atoms = [atom for atom_index, atom in enumerate(self.atoms) if atom_index != atom_index_rdkit]
+
+        # Update atoms
+        for i, atom in enumerate(self.atoms):
+            self.atoms[i]["index"] -= int(atom["index"] > atom_index_rdkit)
+        
+        # Remove bonds 
+        bond_remove_indices = []
+        for i, bond in enumerate(self.bonds):
+            if atom_index_rdkit in bond["index"]:
+                bond_remove_indices.append(i)
+        self.bonds = [bond for bond_index, bond in enumerate(self.bonds) if not(bond_index in bond_remove_indices)]
+
+        # Update bonds
+        for i, bond in enumerate(self.bonds):
+            self.bonds[i]["index"][0] -= int(bond["index"][0] > atom_index_rdkit)
+            self.bonds[i]["index"][1] -= int(bond["index"][1] > atom_index_rdkit)
+
+    def needs_abbreviations_detection(self):
+        for atom in self.atoms:
+            atom_symbol = self.atoms_classes_symbols[atom["class"]]
+            if atom_symbol == "R":
+                return True
+        return False
+    
+    def to_rdkit(
+        self, abbreviations, abbreviations_smiles_mapping, ocr_atoms_classes_mapping, 
+        spelling_corrector, align_rdkit_output=False, assign_stereo=False, remove_hydrogens=False, postprocessing_flags=None
+        ):
+        if postprocessing_flags is None: 
+            postprocessing_flags = {}
+
+        graph_postprocessor = GraphPostprocessor(
+            self, abbreviations, abbreviations_smiles_mapping, ocr_atoms_classes_mapping, spelling_corrector, 
+            postprocessing_flags=postprocessing_flags, align_rdkit_output=align_rdkit_output, assign_stereo=assign_stereo, 
+            remove_hydrogens=remove_hydrogens, filename_logging=self.filename_logging
+        )
+        # Post-processed graph
+        graph_postprocessor.postprocess_before_rdkit_molecule_creation() 
+        
+        # Create RDKit molecule
+        molecule = Chem.RWMol()
+        molecule = self.add_rdkit_atoms(molecule)
+        molecule, needs_update_stereo, bonds_directions = self.add_rdkit_bonds(molecule, assign_stereo)
         molecule = molecule.GetMol()
-
-        # Post-process aromatic bonds not in cycles
-        for bond in molecule.GetBonds():
-            try:
-                if (str(bond.GetBondType()) == "AROMATIC") and (not bond.IsInRing()):
-                    bond.SetBondType(Chem.rdchem.BondType.SINGLE)
-                    molecule.GetAtomWithIdx(bond.GetBeginAtomIdx()).SetIsAromatic(False)
-                    molecule.GetAtomWithIdx(bond.GetEndAtomIdx()).SetIsAromatic(False)
-            except:
-                print("Error in aromatic post-processing")
-                pass 
+        graph_postprocessor.molecule = molecule 
+        graph_postprocessor.needs_update_stereo = needs_update_stereo
+        graph_postprocessor.bonds_directions = bonds_directions 
+        
+        # Post-process RDkit molecule and graph
+        molecule = graph_postprocessor.postprocess_after_rdkit_molecule_creation()
             
-        # Post-process aromatic rings
-        ringInfo = molecule.GetRingInfo()
-        bonds_rings = ringInfo.BondRings()
-        for bonds_ring in bonds_rings:
-            types = []
-            for bond in bonds_ring:
-                types.append(str(molecule.GetBondWithIdx(bond).GetBondType()))
-
-            most_common_type = Counter(types).most_common(1)[0][0]
-            if (most_common_type == "AROMATIC") and any([type != "AROMATIC" for type in types]):
-                for bond in bonds_ring:
-                    molecule.GetBondWithIdx(bond).SetBondType(Chem.rdchem.BondType.AROMATIC)
-        
-        if align_rdkit_output:
-            molecule_aligned = copy.deepcopy(molecule)
-            rdDepictor.Compute2DCoords(molecule_aligned) #rdMolDraw2D.PrepareMolForDrawing(molecule_aligned, addChiralHs=False)
-            for atom_index, atom in enumerate(self.atoms):
-                position = Point3D()
-                position.x, position.y, position.z = atom["position"][0]/64, -atom["position"][1]/64, 0
-                molecule_aligned.GetConformer(0).SetAtomPosition(atom_index, position)
-
-        # Return the molecule if it does not contain any abbreviations and is sanitized
-        if all([(self.atoms_classes_symbols[atom["class"]] != "R") for atom in self.atoms]) and len(Chem.GetMolFrags(molecule)) == 1:
-            if align_rdkit_output:
-                rdDepictor.GenerateDepictionMatching2DStructure(
-                    molecule,
-                    reference = molecule_aligned
-                )
-                try:
-                    rdDepictor.GenerateDepictionMatching2DStructure(
-                        molecule,
-                        reference = molecule_aligned
-                    )
-                except:
-                    print("Aligning RDKit molecule failed")
-                    return Chem.MolFromSmiles("C")
-            if assign_stereo and need_update_stereo:
-                # Assign stereo-chemistry
-                molecule = assign_stereo_centers(molecule, bonds_directions)
-                
-            molecule_return = self.try_sanitize_molecule(molecule)
-            if molecule_return:
-                return molecule_return
-            
-        original_molecule = copy.deepcopy(molecule)
-        original_abbreviations = copy.deepcopy(abbreviations)
-        matched_abbreviations_indices = []
-
-        # Resolve abbreviations
-        for abbreviation_index, atom in enumerate(self.atoms): 
-            if self.atoms_classes_symbols[atom["class"]] == "R":
-                for i, abbreviation in enumerate(abbreviations):
-                    if (atom["position"][0] >= (abbreviation["box"][0][0])) and \
-                        (atom["position"][0] <= (abbreviation["box"][1][0])) and \
-                        (atom["position"][1] >= (abbreviation["box"][0][1])) and \
-                        (atom["position"][1] <= (abbreviation["box"][1][1])):
-                    
-                        # Remove the matched abbreviation
-                        abbreviations = [abb for i_abb, abb in enumerate(abbreviations) if (i_abb != i)]
-                        
-                        if (abbreviation["text"] not in abbreviations_smiles_mapping) and (abbreviation["text"] not in ocr_atoms_classes_mapping):
-                            #print("Before correction: ", abbreviation["text"])
-                            self.superatoms.append(abbreviation["text"])
-                            abbreviation["text"] = spelling_corrector(abbreviation["text"])
-                            #print("After correction: ", abbreviation["text"])
-                            
-                            Chem.SetAtomAlias(molecule.GetAtomWithIdx(abbreviation_index), f"{abbreviation['text']}")
-
-                        if abbreviation["text"] in ocr_atoms_classes_mapping:
-                            #print(f"The OCR detection {abbreviation['text']} is replaced in the molecule.")
-                            molecule_editable = Chem.EditableMol(molecule)
-                            atom_symbol = ocr_atoms_classes_mapping[abbreviation["text"]]["symbol"]
-
-                            # Atom with charge
-                            if "," in atom_symbol:
-                                atom_symbol, charge = atom_symbol.split(",")
-                                rdkit_atom = Chem.Atom(atom_symbol)
-                                rdkit_atom.SetFormalCharge(int(charge))
-                                molecule_editable.ReplaceAtom(abbreviation_index, rdkit_atom)
-                            else:
-                                molecule_editable.ReplaceAtom(abbreviation_index, Chem.Atom(atom_symbol))
-                            molecule = molecule_editable.GetMol()
-                            continue
-
-                        if abbreviation["text"] not in abbreviations_smiles_mapping:
-                            molecule.GetAtomWithIdx(abbreviation_index).SetProp("atomLabel", f"[{abbreviation['text']}]") 
-                            Chem.SetAtomAlias(molecule.GetAtomWithIdx(abbreviation_index), f"[{abbreviation['text']}]")
-                            continue
-                    
-                        molecule_abbreviation = Chem.MolFromSmiles(abbreviations_smiles_mapping[abbreviation["text"]]["smiles"])
-
-                        if molecule_abbreviation is None:
-                            print(f"Problem with abbreviation: {abbreviation}")
-                            continue
-
-                        # Save molecule abbreviation connection points
-                        multiple_bonds_error = False
-                        molecule_abbreviation_connection_points = {}
-                        connection_point_abbreviation_index = 0
-                        for atom_index, connection_atom in enumerate(molecule_abbreviation.GetAtoms()):
-                            if connection_atom.GetSymbol() == "*": 
-                                bonds = connection_atom.GetBonds()
-                                
-                                if len(bonds) > 1:
-                                    print("Error: connection atom from abbreviation has multiple bonds")
-                                    multiple_bonds_error = True
-                                    break
-
-                                bond = bonds[0]
-                                # Save connection atoms
-                                for neighbor_index in [bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()]:
-                                    if molecule_abbreviation.GetAtomWithIdx(neighbor_index).HasProp(f"{abbreviation_index}-attachmentIndex"):
-                                        # Different atoms of the molecule can attach to the same position in the abbreviation
-                                        molecule_abbreviation.GetAtomWithIdx(neighbor_index).SetProp(
-                                            f"{abbreviation_index}-attachmentIndex",
-                                            molecule_abbreviation.GetAtomWithIdx(neighbor_index).GetProp(f"{abbreviation_index}-attachmentIndex") + "," + str(connection_point_abbreviation_index)
-                                        )
-                                    else:
-                                        molecule_abbreviation.GetAtomWithIdx(neighbor_index).SetProp(f"{abbreviation_index}-attachmentIndex", str(connection_point_abbreviation_index))
-                                    molecule_abbreviation_connection_points[str(connection_point_abbreviation_index)] = {
-                                        "bond": bond.GetBondType()
-                                    }
-
-                                connection_point_abbreviation_index += 1
-
-                        if multiple_bonds_error:
-                            continue
-
-                        nb_connection_points_abbreviation_molecule = connection_point_abbreviation_index
-                        
-                        # Remove extra atoms in molecule abbreviation
-                        molecule_abbreviation_editable = Chem.EditableMol(molecule_abbreviation)
-                        for atom_index in range(molecule_abbreviation.GetNumAtoms()-1, -1, -1):
-                            if molecule_abbreviation.GetAtomWithIdx(atom_index).GetSymbol() == "*": 
-                                molecule_abbreviation_editable.RemoveAtom(atom_index)
-                        molecule_abbreviation = molecule_abbreviation_editable.GetMol()
-
-                        # Retrieve connection points indices
-                        for atom_index, connection_atom in enumerate(molecule_abbreviation.GetAtoms()):
-                            if connection_atom.HasProp(f"{abbreviation_index}-attachmentIndex"):
-                                connection_point_abbreviation_indices = connection_atom.GetProp(f"{abbreviation_index}-attachmentIndex").split(",")
-                                for connection_point_abbreviation_index in connection_point_abbreviation_indices:
-                                    molecule_abbreviation_connection_points[connection_point_abbreviation_index]["index"] = atom_index
-                            
-                        # Save molecule connection points
-                        connection_point_index = 0
-                        for connection_atom in molecule.GetAtomWithIdx(abbreviation_index).GetNeighbors():
-                            connection_point_index += 1
-
-                        nb_connection_points_molecule = connection_point_index
-
-                        if nb_connection_points_molecule != nb_connection_points_abbreviation_molecule:
-                            print(f"The number of connection point between the predicted abbreviation node and the associated sub-molecule ({abbreviation['text']}) mismatch")
-                            break
-
-                        # Save molecule connection points
-                        connection_point_index = 0
-                        for connection_atom in molecule.GetAtomWithIdx(abbreviation_index).GetNeighbors():
-                            connection_atom.SetProp(f"{abbreviation_index}-attachmentIndex", str(connection_point_index))
-                            connection_point_index += 1
-
-                        # Remove abbreviation in molecule
-                        matched_abbreviations_indices.append(abbreviation_index)
-                        
-                        # Retrieve connection points indices
-                        molecule_connection_points = {}
-                        for atom_index, connection_atom in enumerate(molecule.GetAtoms()):
-                            if connection_atom.HasProp(f"{abbreviation_index}-attachmentIndex"):
-                                connection_point_index = connection_atom.GetProp(f"{abbreviation_index}-attachmentIndex")
-                                molecule_connection_points[connection_point_index] = {
-                                    "index": atom_index
-                                }
-
-                        offset = molecule.GetNumAtoms()
-                        # Combine
-                        molecule = Chem.CombineMols(molecule, molecule_abbreviation) 
-                        molecule_editable = Chem.EditableMol(molecule)
-
-                        # Add bonds (For multiple connection point abbreviations, the order should be from left to right, by checking bonds positions #TODO)
-                        for connection_point_index in molecule_connection_points.keys():
-                            try:
-                                molecule_editable.AddBond(
-                                    molecule_connection_points[connection_point_index]["index"], 
-                                    molecule_abbreviation_connection_points[connection_point_index]["index"] + offset, 
-                                    order=molecule_abbreviation_connection_points[connection_point_index]["bond"]
-                                )
-                            except:
-                                print('error')
-                                print(connection_point_index)
-                                print(abbreviation)
-                           
-                        molecule = molecule_editable.GetMol()
-
-                        break
-        
-        # Remove abbreviation in molecule (in decreasing order)
-        molecule_editable = Chem.EditableMol(molecule)
-        for abbreviation_index in sorted(matched_abbreviations_indices, reverse=True):
-            molecule_editable.RemoveAtom(abbreviation_index)
-        molecule = molecule_editable.GetMol()
-
-        if assign_stereo:
-            # Adjust wedge bonds indices after removing "abbreviation connections" atoms
-            for bi in range(len(bonds_directions[0])):
-                b, e = bonds_directions[0][bi]
-                b -= sum([b > i for i in matched_abbreviations_indices])
-                e -= sum([e > i for i in matched_abbreviations_indices])
-                bonds_directions[0][bi] = b, e
-
-        if assign_stereo and need_update_stereo:
-            # Assign stereo-chemistry
-            molecule = assign_stereo_centers(molecule, bonds_directions)
-
-        if len(Chem.GetMolFrags(molecule)) == 1:
-            if align_rdkit_output:
-                molecule_aligned_2 = Chem.EditableMol(molecule_aligned)
-                for abbreviation_index in sorted(matched_abbreviations_indices, reverse=True):
-                    molecule_aligned_2.RemoveAtom(abbreviation_index)
-                molecule_aligned_2 = molecule_aligned_2.GetMol()
-                try:
-                    rdDepictor.GenerateDepictionMatching2DStructure(
-                        molecule,
-                        reference = molecule_aligned_2
-                    )
-                except:
-                    print("Aligning RDKit molecule failed")
-                    return Chem.MolFromSmiles("C")
-
-            molecule_return = self.try_sanitize_molecule(molecule)
-            if molecule_return:
-                return molecule_return
-        
-        elif (not stop) and (len(original_abbreviations) > 0):
-            
-            for i, abbreviation in enumerate(original_abbreviations):
-                
-                atoms_matched = []
-                for abbreviation_index, atom in enumerate(self.atoms): 
-                    if (atom["position"][0] >= (abbreviation["box"][0][0])) and \
-                        (atom["position"][0] <= (abbreviation["box"][1][0])) and \
-                        (atom["position"][1] >= (abbreviation["box"][0][1])) and \
-                        (atom["position"][1] <= (abbreviation["box"][1][1])):
-                        atoms_matched.append(atom)
-
-                if len(atoms_matched) > 1:
-                    # If multiple atoms are located to the same ocr prediction location, trust the ocr. 
-                    # An alternative would be to look at the atoms predictions confidences
-                    if abbreviation["text"] in abbreviations_smiles_mapping:
-                        atom_class = self.symbols_classes_atoms["R"]
-                    elif all(atom["class"] == atoms_matched[0]["class"] for atom in atoms_matched):
-                        atom_class = atoms_matched[0]["class"]
-                    else:
-                        # Get most represented prediction? most popular class?
-                        atom_class = self.symbols_classes_atoms["R"] 
-                    
-                    # Create new atom
-                    new_atom_index = len(self.atoms) 
-                    self.atoms.append({
-                        "index": new_atom_index,
-                        "class": atom_class,
-                        "position": atoms_matched[0]["position"],
-                        "type": 1
-                    })
-
-                    # Update previous bonds
-                    remove_bonds_indices = []
-                    atoms_matched_indices = [atom_index for atom_index, atom in enumerate(self.atoms) if atom in atoms_matched]
-                    for bond_index, bond in enumerate(self.bonds):
-                        if (bond["index"][0] in atoms_matched_indices) and (bond["index"][1] in atoms_matched_indices):
-                            remove_bonds_indices.append(bond_index)
-
-                        if bond["index"][0] in atoms_matched_indices:
-                            new_index = [new_atom_index, bond["index"][1]]
-                            if all((new_index != bond["index"]) for bond in self.bonds) and all((list(reversed(new_index)) != bond["index"]) for bond in self.bonds):
-                                bond["index"] = new_index
-                            else:
-                                remove_bonds_indices.append(bond_index)
-                            continue
-
-                        if bond["index"][1] in atoms_matched_indices:
-                            new_index = [bond["index"][0], new_atom_index]
-                            if all((new_index != bond["index"]) for bond in self.bonds) and all((list(reversed(new_index)) != bond["index"]) for bond in self.bonds):
-                                bond["index"] = new_index
-                            else:
-                                remove_bonds_indices.append(bond_index)
-
-                    self.bonds = [bond for bond_index, bond in enumerate(self.bonds) if bond_index not in remove_bonds_indices]
-               
-                    # Remove matched atoms
-                    for atom_matched in atoms_matched:
-                        self.atoms.remove(atom_matched)
-                    
-                    # Update bond indices
-                    for bond in self.bonds:
-                        b = bond["index"][0]
-                        e = bond["index"][1]
-                        b -= sum([b > removed_atom_index for removed_atom_index in atoms_matched_indices])
-                        e -= sum([e > removed_atom_index for removed_atom_index in atoms_matched_indices])
-                        bond["index"] = [b, e]
-
-            print("Recursive molecule creation")
-            return self.to_rdkit(
-                original_abbreviations, 
-                abbreviations_smiles_mapping, 
-                ocr_atoms_classes_mapping, 
-                spelling_corrector, 
-                stop=True
-            )
-            
-        if len(Chem.GetMolFrags(original_molecule)) == 1:
-            if align_rdkit_output:
-                molecule_aligned_2 = Chem.EditableMol(molecule_aligned)
-                for abbreviation_index in sorted(matched_abbreviations_indices, reverse=True):
-                    molecule_aligned_2.RemoveAtom(abbreviation_index)
-                molecule_aligned_2 = molecule_aligned_2.GetMol()
-                try:
-                    rdDepictor.GenerateDepictionMatching2DStructure(
-                        molecule,
-                        reference = molecule_aligned_2
-                    )
-                except:
-                    print("Aligning RDKit molecule failed")
-                    return Chem.MolFromSmiles("C")
-
-            original_molecule_return = self.try_sanitize_molecule(original_molecule)
-            if original_molecule_return:
-                return original_molecule_return
-        
-        # Remove isolated atom
-        if (len(Chem.GetMolFrags(original_molecule))) > 1 and (not stop):
-            atoms_involved_in_connections = list(set([bond["index"][0] for bond in self.bonds] + [bond["index"][1] for bond in self.bonds]))
-            removed_atom_indices = []
-            for atom_idx in range(len(self.atoms)):
-                if atom_idx not in atoms_involved_in_connections:
-                    removed_atom_indices.append(atom_idx)
-            removed_atom_indices = sorted(removed_atom_indices, reverse = True)
-            print("Atom indices to remove:" + str(removed_atom_indices))
-            if len(removed_atom_indices):
-                for bond_idx in range(len(self.bonds)):
-                    # Remove bonds connected to removed atoms
-                    b, e = self.bonds[bond_idx]["index"]
-                    if b in removed_atom_indices or e in removed_atom_indices:
-                        continue
-                    # Shift remaining atoms indices
-                    b -= sum([b > removed_atom_index for removed_atom_index in removed_atom_indices])
-                    e -= sum([e > removed_atom_index for removed_atom_index in removed_atom_indices])
-                    self.bonds[bond_idx]["index"] = [b, e]
-                    
-                atoms_new = []
-                for atom_idx in range(len(self.atoms)):
-                    if atom_idx not in removed_atom_indices:
-                        atoms_new.append({
-                        "index": self.atoms[atom_idx]["index"],
-                        "class": self.atoms[atom_idx]["class"],
-                        "position": self.atoms[atom_idx]["position"],
-                        "type": 1
-                    })
-                self.atoms = atoms_new
-            return self.to_rdkit(
-                original_abbreviations, 
-                abbreviations_smiles_mapping, 
-                ocr_atoms_classes_mapping, 
-                spelling_corrector, 
-                stop=True
-            )
-        
-        # TODO Return largest fragment
-        return Chem.MolFromSmiles("C")
-
-    def get_data(self):
-        return self.data
-
-
+        return molecule

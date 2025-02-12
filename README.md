@@ -20,6 +20,9 @@ If you find this repository useful, please consider citing:
     pages = {19552-19561}
 }
 ```
+Publication in [ICCV](https://openaccess.thecvf.com/content/ICCV2023/html/Morin_MolGrapher_Graph-based_Visual_Recognition_of_Chemical_Structures_ICCV_2023_paper.html) (DOI: https://doi.org/10.1109/iccv51070.2023.01791)
+
+Publication in [Arxiv](https://arxiv.org/abs/2308.12234) (DOI: https://doi.org/10.48550/arXiv.2308.12234)
 
 ### Installation
 
@@ -54,11 +57,68 @@ Models can be selected by modifying attributes of GraphRecognizer (in `./molgrap
 
 ### Inference
 
+#### Script
 Your input images can be placed in the folder: `./data/benchmarks/default/`.
 ```
 bash molgrapher/scripts/annotate/run.sh
 ```
 Output predictions are saved in: `./data/predictions/default/`.
+
+#### Python
+```
+from molgrapher.models.molgrapher_model import MolgrapherModel
+
+model = MolgrapherModel()
+input_images_paths = [p for p in glob.glob("./data/benchmarks/default/")]
+annotations = model.predict_batch(input_images_paths)  
+```
+
+`annotations` is a list of dictionnaries with fields:
+```
+[
+    {
+        'smi': '[H]N1CCN(CC2=CC=C(Cl)N=C2)C1=N[N+](=O)[O-]',  # MolGrapher SMILES prediction
+        'conf': 0.997,                                        # MolGrapher confidence
+        'file-info': {
+            'filename': '...',                                # Input image filename
+            'image_nbr': 1       
+        }, 
+        'abbreviations_ocr': [...],                           # Detected OCR text
+        'abbreviations': [...],                               # Post-processed detected OCR text
+        'annotator': {'program': 'MolGrapher', 'version': '1.0.0'},
+   },
+   ...
+]
+```
+
+### Docling integration
+[Docling](https://github.com/DS4SD/docling) can extract the content and structure from PDF documents. It recognizes page layout, reading order, table structure, code, formulas, and classify images. 
+Here, we combine `docling` and `MolGrapher`: 
+- `Docling` segments and classify chemical-structure images from document pages,
+- `MolGrapher` converts images to SMILES.
+
+Install [docling](https://github.com/DS4SD/docling) in the `molgrapher` environment.
+```
+pip install docling
+```
+
+Option 1. Convert a PDF document with `docling` and enrich it with `MolGrapher` annotations. 
+
+Example: 
+```
+bash molgrapher/scripts/annotate/docling/docling_convert_and_enrich.sh ./data/pdfs/US9259003_page_4.pdf ./data/docling_documents/US9259003_page_4/
+# bash [script] [pdf-path] [docling-document-directory-path]
+```
+Option 2. Enrich an existing `docling` document with `MolGrapher` annotations.
+
+Example: 
+```
+python3 molgrapher/scripts/annotate/docling/enrich_docling_document.py --docling-document-directory-path ./data/docling_documents/US9259003_page_4/  
+# python3 [script] --docling-document-directory-path [docling-document-directory-path]
+```
+
+The `docling` document, enriched with SMILES predictions, will be stored in `[docling-document-directory-path]`.
+For more information, please refer to [docling](https://github.com/DS4SD/docling).
 
 ### USPTO-30K Benchmark
 
