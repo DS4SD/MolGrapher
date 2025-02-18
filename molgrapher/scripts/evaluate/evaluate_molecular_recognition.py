@@ -143,7 +143,7 @@ def main():
                 data_module = DataModule(
                     config_dataset_graph, 
                     dataset_class = ImageDataset,
-                    images_folder_path = images_folder_path
+                    images_or_paths = images_folder_path
                 )
                 data_module.setup_images_benchmarks()
 

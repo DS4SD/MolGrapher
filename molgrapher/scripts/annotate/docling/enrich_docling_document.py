@@ -11,15 +11,16 @@ from PIL import Image
 from io import BytesIO
 
 from docling_core.types.doc import DoclingDocument
+from docling_core.types.doc.document import PictureMoleculeData
 
 from molgrapher.models.molgrapher_model import MolgrapherModel
 
 
-def enrich_docling_document_with_smiles(docling_document: DoclingDocument, docling_document_directory_path: str = "") -> DoclingDocument:
+def enrich_docling_document_with_smiles(docling_document: DoclingDocument) -> DoclingDocument:
     """Enrich a docling document with MolGrapher predictions.
 
     Extract pictures classified as "chemistry_molecular_structure" in a docling document. 
-    Process them using MolGrapher. Save as pictures annotations the MolGrapher's SMILES predictions
+    Process them using MolGrapher. Save as pictures annotations the MolGrapher's SMILES predictions.
     """
     # Extract images
     images = {}
@@ -30,34 +31,29 @@ def enrich_docling_document_with_smiles(docling_document: DoclingDocument, docli
         image_bytes = base64.b64decode(str(element.image.uri).split(",")[1])
         images[element.self_ref] = Image.open(BytesIO(image_bytes))
 
-    # Save images to disk
-    docling_document_directory_tmp = None
-    if docling_document_directory_path == "":
-        docling_document_directory_tmp = tempfile.TemporaryDirectory()
-        docling_document_directory_path = docling_document_directory_tmp.name
-    images_folder = docling_document_directory_path + "/images/"
-    if not(os.path.exists(images_folder)):
-        os.mkdir(images_folder)
-    for i, image in enumerate(images.values()):
-        image.save(images_folder + f"/{i}.png")
-    
     # Run MolGrapher 
-    input_images_paths = [p for p in glob.glob(images_folder + "/*")]
     model = MolgrapherModel({"visualize": False})
-    annotations = model.predict_batch(input_images_paths) 
+    annotations = model.predict_batch(images.values()) 
 
     # Save annotations in docling document
-    for (self_ref, image), annotation in zip(images.items(), annotations):
+    for self_ref, annotation in zip(images.keys(), annotations):
         for element in docling_document.pictures:
-            if element.self_ref == self_ref:
-                docling_annotation = {
-                    "provenance": f"{annotation['annotator']['program']}-{annotation['annotator']['version']}", 
-                    "smiles": annotation["smi"], 
-                    "confidence": annotation["conf"],
-                }
-                element.annotations.append(docling_annotation)
-    if docling_document_directory_tmp:
-        docling_document_directory_tmp.cleanup()
+            if element.self_ref != self_ref:
+                continue 
+
+            molecule_annotation = PictureMoleculeData(
+                provenance = f"{annotation['annotator']['program']}-{annotation['annotator']['version']}", 
+                smi = annotation["smi"], 
+                confidence = annotation["conf"],
+                class_name = "chemistry_molecular_structure",
+                segmentation = [
+                    (0, 0),
+                    (0, element.image.size.height),
+                    (element.image.size.width, element.image.size.height),
+                    (element.image.size.width, 0),
+                ],
+            )
+            element.annotations.append(molecule_annotation)
 
     return docling_document
 
@@ -72,7 +68,7 @@ def main():
     docling_document = DoclingDocument.load_from_json(docling_document_path)
 
     # Enrich document with SMILES
-    docling_document = enrich_docling_document_with_smiles(docling_document, args.docling_document_directory_path)
+    docling_document = enrich_docling_document_with_smiles(docling_document)
 
     # Save docling document 
     with open(docling_document_path[:-5] + "_enriched.json", "w", encoding="utf-8") as fp:

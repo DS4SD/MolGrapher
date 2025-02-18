@@ -151,19 +151,21 @@ class MolgrapherModel:
         self.abbreviations_smiles_mapping = get_abbreviations_smiles_mapping()
         self.spelling_corrector = SpellingCorrector(self.abbreviations_smiles_mapping)
 
-    def predict_batch(self, _input_images_paths):
+    def predict_batch(self, _images_paths):
         annotations_batch = []
-        for _batch_images_paths in chunked(_input_images_paths, self.args["chunk_size"]):
+        for _batch_images_paths in chunked(_images_paths, self.args["chunk_size"]):
             annotations_batch.extend(self.predict(_batch_images_paths))
         return annotations_batch
 
-    def predict(self, input_images_paths):
+    def predict(self, images_or_paths):
+        if not isinstance(images_or_paths, list):
+            images_or_paths = [images_or_paths]
+
         # Read dataset images
         data_module = DataModule(
             self.config_dataset_graph,
             dataset_class = ImageDataset,
-            images_folder_path = None,
-            images_paths = input_images_paths,
+            images_or_paths = images_or_paths,
             force_cpu = self.args["force_cpu"],
             remove_captions = self.args["remove_captions"],
         )
@@ -266,7 +268,7 @@ class MolgrapherModel:
 
         # Save annotations
         annotations = []
-        for predicted_smiles, confidence, image_filename, abbreviations, abbreviations_ocr in zip(predictions["smiles"], predictions["confidences"], input_images_paths, abbreviations_list, abbreviations_list_ocr):
+        for predicted_smiles, confidence, image_filename, abbreviations, abbreviations_ocr in zip(predictions["smiles"], predictions["confidences"], images_filenames, abbreviations_list, abbreviations_list_ocr):
             if predicted_smiles is not None:
                 if abbreviations != []:
                     abbreviations_texts = [abbreviation["text"] for abbreviation in abbreviations]

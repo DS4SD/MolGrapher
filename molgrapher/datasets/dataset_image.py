@@ -26,7 +26,9 @@ class ImageDataset(torch.utils.data.Dataset):
     def __getitem__(self, index):
         time_s = time()
         image_filename = self.dataset["image_filename"].iloc[index]
-        pil_image = Image.open(image_filename)
+        pil_image = self.dataset["image"].iloc[index]
+        if pil_image is None:
+            pil_image = Image.open(image_filename)
         
         if not self.preprocessed:
             pil_image = resize_image(
