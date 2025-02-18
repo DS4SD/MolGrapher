@@ -48,11 +48,14 @@ class CaptionRemover:
         self.force_cpu = force_cpu
         self.remove_captions = remove_captions
 
-    def _preprocess_images_process(self, images_filenames):
+    def _preprocess_images_process(self, images_or_paths):
         pil_images = []
-        for image_filename in tqdm(images_filenames):
-            pil_image = Image.open(image_filename)
-                
+        for image_or_path in tqdm(images_or_paths):
+            if isinstance(image_or_path, str):
+                pil_image = Image.open(image_or_path)
+            else:
+                pil_image = image_or_path
+                            
             pil_image = resize_image(
                 pil_image, 
                 (self.config["image_size"][1], self.config["image_size"][1]), 
@@ -76,8 +79,8 @@ class CaptionRemover:
             pil_images.append(pil_image)
         return pil_images
 
-    def preprocess_images(self, images_filenames):
-        return self._preprocess_images_process(images_filenames)
+    def preprocess_images(self, images_or_paths):
+        return self._preprocess_images_process(images_or_paths)
    
     def __call__(self, pil_image):
         """
