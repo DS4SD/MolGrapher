@@ -3,6 +3,7 @@
 
 import os
 from os import path 
+from pathlib import Path
 import math
 import glob
 import json
@@ -43,14 +44,13 @@ class DataModule(pl.LightningDataModule):
         mode = 'train', 
         force_precompute = False, 
         return_images_filenames = False, 
-        images_folder_path = None, 
-        images_paths = None,
+        images_or_paths = None,
         clean_only = False,
         dataset_evaluate = False,
         dataset_predict = True,
         force_cpu = False,
         taa_step = None,
-        remove_captions = True
+        remove_captions = True,
     ):
         super().__init__()
         self.config = config
@@ -62,14 +62,14 @@ class DataModule(pl.LightningDataModule):
         self.mode = mode
         self.force_precompute = force_precompute
         self.return_images_filenames = return_images_filenames
-        self.images_folder_path = images_folder_path
-        self.images_paths = images_paths
+        self.images_or_paths = images_or_paths
         self.clean_only = clean_only
         self.dataset_evaluate = dataset_evaluate
         self.dataset_predict = dataset_predict
         self.force_cpu = force_cpu
         self.taa_step = taa_step
         self.remove_captions = remove_captions
+        self.has_pil_images = False
 
         print("Data module configuration:")
         pprint(self.config)
@@ -647,38 +647,56 @@ class DataModule(pl.LightningDataModule):
         print("Dataset: ", self.benchmarks_datasets[0].dataset)
 
     def setup_images_benchmarks(self, max_index=None):
-        if self.images_folder_path != None:
-            images_filenames = [
-                image_filename 
-                    for image_filename in glob.glob(self.images_folder_path + "/*")
+        images_filenames = []
+        if isinstance(self.images_or_paths, str) or isinstance(self.images_or_paths, Path):
+            if path.isdir(self.images_or_paths):
+                images_filenames = [
+                    image_filename 
+                    for image_filename in glob.glob(self.images_or_paths + "/*")
                     if ((".png" in image_filename) or (".TIF" in image_filename))
-            ]
-            
-            if len(images_filenames) == 0:
-                print(f"Image directory not found: {self.images_folder_path}")
+                ]
+            elif path.isfile(self.images_or_paths):
+                images_filenames = [self.images_or_paths]
+        elif isinstance(self.images_or_paths, list):
+            if all(isinstance(image, str) or isinstance(image, Path) for image in self.images_or_paths):
+                images_filenames = self.images_or_paths
+            else:
+                images_filenames = [f"{i}.png" for i in range(len(self.images_or_paths))]
+                self.has_pil_images = True
+                # Convert to L if needed
+                for i in range(len(self.images_or_paths)):
+                    if self.images_or_paths[i].mode == 'L':
+                        continue
+                    self.images_or_paths[i] = self.images_or_paths[i].convert("L")
 
-        elif self.images_paths != None:
-            images_filenames = self.images_paths
-
-            if len(images_filenames) == 0:
-                print(f"Empty image list: {self.images_paths}")
-
-        # Skip pre-processed
+       # Skip pre-processed
         images_filenames_clean = []
         for image_filename in images_filenames:
-            if "preprocessed" in image_filename:
+            if ("preprocessed" in image_filename) and not(self.has_pil_images):
                 print(f"Skipping image file: {image_filename}")
             else:
                 images_filenames_clean.append(image_filename)
 
-        dataset = pd.DataFrame(images_filenames_clean, columns=["image_filename"])   
+        if not(self.has_pil_images):
+            images = [None] * len(images_filenames_clean)
+        else:
+            images = self.images_or_paths
+
+        dataset = pd.DataFrame({
+            "image_filename": images_filenames_clean,
+            "image": images,
+        })   
         self.benchmarks_datasets = [self.dataset_class(dataset, config=self.config, force_cpu=self.force_cpu)]
 
     def preprocess(self):
         from molgrapher.utils.utils_dataset import CaptionRemover
         for benchmark_dataset in self.benchmarks_datasets:
             self.caption_remover = CaptionRemover(self.config, force_cpu=self.force_cpu, remove_captions=self.remove_captions)
-            preprocessed_images = self.caption_remover.preprocess_images(benchmark_dataset.dataset["image_filename"])
+            if self.has_pil_images:
+                preprocessed_images = self.caption_remover.preprocess_images(benchmark_dataset.dataset["image"])
+                benchmark_dataset.dataset["image"] = preprocessed_images
+            else:
+                preprocessed_images = self.caption_remover.preprocess_images(benchmark_dataset.dataset["image_filename"])
             benchmark_dataset.preprocessed = True
 
             # Save
