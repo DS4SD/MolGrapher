@@ -69,8 +69,8 @@ def main():
     # Save
     saved_predictions = False
     saved_abbreviations = False
-    save_predictions = True
-    save_abbreviations = True
+    save_predictions = False # Set to False for large datasets if using limited RAM
+    save_abbreviations = False
     clean = True
     images_only = False 
     images_folder_path = os.path.dirname(__file__) + "/../../../data/benchmarks/lum_1/" 
