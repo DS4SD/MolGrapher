@@ -69,8 +69,8 @@ def main():
     # Save
     saved_predictions = False
     saved_abbreviations = False
-    save_predictions = True
-    save_abbreviations = True
+    save_predictions = False # Set to False for large datasets if using limited RAM
+    save_abbreviations = False
     clean = True
     images_only = False 
     images_folder_path = os.path.dirname(__file__) + "/../../../data/benchmarks/lum_1/" 
@@ -143,7 +143,7 @@ def main():
                 data_module = DataModule(
                     config_dataset_graph, 
                     dataset_class = ImageDataset,
-                    images_folder_path = images_folder_path
+                    images_or_paths = images_folder_path
                 )
                 data_module.setup_images_benchmarks()
 

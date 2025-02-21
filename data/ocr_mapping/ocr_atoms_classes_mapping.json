@@ -3,11 +3,17 @@
     "CH2": {"symbol": "C", "population": 99}, 
     "CH": {"symbol": "C", "population": 98}, 
     "C": {"symbol": "C", "population": 97}, 
+    "HC": {"symbol": "C", "population": 76}, 
+    "H2C": {"symbol": "C", "population": 75}, 
+    "H3C": {"symbol": "C", "population": 74}, 
     "OH": {"symbol": "O", "population": 96}, 
     "HO": {"symbol": "O", "population": 95}, 
     "O": {"symbol": "O", "population": 94}, 
     "NH2": {"symbol": "N", "population": 104},
     "NH": {"symbol": "N", "population": 102},
+    "HN": {"symbol": "N", "population": 73},
+    "H3Si": {"symbol": "Si", "population": 78},
+    "SiH3": {"symbol": "Si", "population": 77},
     "O-": {"symbol": "O,-1", "population": 91}, 
     "-O": {"symbol": "O,-1", "population": 90}, 
     "N-": {"symbol": "N,-1", "population": 89},
@@ -20,5 +26,6 @@
     "-I": {"symbol": "I,-1", "population": 82},
     "I-": {"symbol": "I,-1", "population": 81},
     "+CH": {"symbol": "C,1", "population": 80},
-    "CH+": {"symbol": "C,1", "population": 79}
+    "CH+": {"symbol": "C,1", "population": 79},
+    "D": {"symbol": "H;2", "population": 79}
 }
