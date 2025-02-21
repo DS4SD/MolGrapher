@@ -26,10 +26,8 @@ def enrich_docling_document_with_smiles(docling_document: DoclingDocument) -> Do
     images = {}
     for element in docling_document.pictures:
         # Select only chemical-structures
-        if (element.annotations[0].predicted_classes[0].class_name != "chemistry_molecular_structure"):
-            continue
-        image_bytes = base64.b64decode(str(element.image.uri).split(",")[1])
-        images[element.self_ref] = Image.open(BytesIO(image_bytes))
+        if (element.annotations[0].predicted_classes[0].class_name == "chemistry_molecular_structure"):
+            images[element.self_ref] = element.get_image(doc=docling_document)
 
     # Run MolGrapher 
     model = MolgrapherModel({"visualize": False})
