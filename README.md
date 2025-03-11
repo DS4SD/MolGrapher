@@ -93,7 +93,7 @@ annotations = model.predict_batch(images_or_paths)
 ]
 ```
 
-### Docling integration
+### Docling Integration
 [Docling](https://github.com/DS4SD/docling) is a toolkit to extract the content and structure from PDF documents. It recognizes page layout, reading order, table structure, code, formulas, and classify images. 
 Here, we combine `docling` and `MolGrapher`: 
 - `Docling` segments and classify chemical-structure images from document pages,
