@@ -40,7 +40,7 @@ class MolgrapherModel:
     def __init__(self, args={}):   
         self.args = {
             "force_cpu": False,
-            "force_no_multiprocessing": True,
+            "force_no_multiprocessing": True, # Disable PaddleOCR multiprocessing for abbreviation detection
             "num_threads_pytorch": 10,
             "num_processes_mp": 10,
             "chunk_size": 200,

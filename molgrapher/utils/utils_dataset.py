@@ -5,6 +5,7 @@
 import os 
 import multiprocessing
 from tqdm import tqdm
+import torch 
 
 # Images
 import cv2
@@ -41,13 +42,18 @@ def get_ocr(force_cpu):
     return ocr 
 
 class CaptionRemover:
+    ocr = None 
+
     def __init__(self, config = None, force_cpu = False, remove_captions=True):
         self.config = config
         self.border_size = 30
-        self.ocr = get_ocr(force_cpu = force_cpu)
+        if remove_captions:
+            CaptionRemover.ocr = get_ocr(force_cpu = force_cpu)
         self.force_cpu = force_cpu
         self.remove_captions = remove_captions
-
+        # Set the number of threads used in pytorch to 1 to avoid conflicts with MKL.
+        torch.set_num_threads(1)
+       
     def _preprocess_images_process(self, images_or_paths):
         pil_images = []
         for image_or_path in tqdm(images_or_paths):

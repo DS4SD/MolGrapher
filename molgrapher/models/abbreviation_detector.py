@@ -137,10 +137,8 @@ class AbbreviationDetector:
             images_filenames = images_filenames_abbreviations
             bonds_sizes = bonds_sizes_abbreviations 
         
+        # Run PaddleOCR for abbreviation detection on multiple processes 
         if self.force_cpu and not(self.force_no_multiprocessing):
-            # Debugging 
-            #print(self._detect_process(images_filenames, bonds_sizes, self.ocr_recognition_only, self.ocr))
-
             if len(images_filenames) < self.config["num_processes_mp"]:
                 print("Abbreviation detector warning: Too much processes")
             images_filenames_split = np.array_split(images_filenames, self.config["num_processes_mp"])
@@ -150,7 +148,6 @@ class AbbreviationDetector:
             abbreviations_processes = pool.map(self._detect_process_star, args)
             pool.close()
             pool.join()
-
             abbreviations_list = []
             for index in range(self.config["num_processes_mp"]):
                 abbreviations_list.extend(abbreviations_processes[index])
@@ -455,11 +452,18 @@ class AbbreviationDetectorGPU(AbbreviationDetector):
 
 
 class AbbreviationDetectorCPU(AbbreviationDetector):
-    caption_remover = CaptionRemover(force_cpu = True)
-    ocr = get_ocr(force_cpu = True)
-    ocr_recognition_only = get_ocr_recognition_only(force_cpu = True)
+    # ocr should be a class attribute for multiprocessing to work.
+    # However, instanciating ocr directly here would cause unecessary instanciation of PaddleOCR anytime a class within this file is imported.
+     
+    caption_remover = None
+    ocr = None
+    ocr_recognition_only = None
     
     def __init__(self, config, image_size = (1024, 1024), force_cpu = True, force_no_multiprocessing = False, angle_recognition = False):
+        AbbreviationDetectorCPU.caption_remover = CaptionRemover(force_cpu = True)
+        AbbreviationDetectorCPU.ocr = get_ocr(force_cpu = True)
+        AbbreviationDetectorCPU.ocr_recognition_only = get_ocr_recognition_only(force_cpu = True)
+        caption_remover = CaptionRemover(force_cpu = True)
         super(AbbreviationDetectorCPU, self).__init__(config, image_size, force_cpu, force_no_multiprocessing, angle_recognition)
 
 
