@@ -54,11 +54,6 @@ class GraphRecognizer(pl.LightningModule):
                     "./data/models/graph_classifier/"
                 ], check=True)
 
-        # # Download models
-        # if not(os.path.exists(keypoint_detector_model_path) or os.path.exists(keypoint_detector_model_path)):
-        #     path = snapshot_download(repo_id="ds4sd/MolGrapher", revision="main")
-        #     print(path)
-  
         self.keypoint_detector = KeypointDetector.load_from_checkpoint(
             keypoint_detector_model_path, 
             config_dataset = config_dataset_keypoint,
