@@ -46,7 +46,7 @@ To install and run MolGrapher using Docker, please refer to [README_DOCKER.md](h
 
 ### Model
 
-Models are available on [Hugging Face](https://huggingface.co/ds4sd/MolGrapher). They are automatically downloaded in `MolGrapher/data/models` when running the model. 
+Models are available on [Hugging Face](https://huggingface.co/ds4sd/MolGrapher). They are automatically downloaded in `MolGrapher/data/models` when running the model. The model parameters are documented [here](https://github.com/DS4SD/MolGrapher/blob/b855f21567afced54c6ab680654c88ae5a40ef14/molgrapher/models/molgrapher_model.py#L42).
 
 ### Inference
 
