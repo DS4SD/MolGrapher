@@ -46,25 +46,16 @@ To install and run MolGrapher using Docker, please refer to [README_DOCKER.md](h
 
 ### Model
 
-Models are available on [Hugging Face](https://huggingface.co/ds4sd/MolGrapher).
-```
-wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/graph_classifier/gc_gcn_model.ckpt -P ./data/models/graph_classifier/
-wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/graph_classifier/gc_no_stereo_model.ckpt -P ./data/models/graph_classifier/
-wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/graph_classifier/gc_stereo_model.ckpt -P ./data/models/graph_classifier/
-wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/keypoint_detector/kd_model.ckpt -P ./data/models/keypoint_detector/
-```
-
-After downloading, the folder `models` from Hugging Face should be placed in: `./data/`.
-Models can be selected by modifying attributes of GraphRecognizer in `./molgrapher/models/graph_recognizer.py` (The steps to follow are detailed in this [issue](https://github.com/DS4SD/MolGrapher/issues/6#issuecomment-2132380848)).
+Models are available on [Hugging Face](https://huggingface.co/ds4sd/MolGrapher). They are automatically downloaded in `MolGrapher/data/models` when running the model. 
 
 ### Inference
 
 #### Script
-Your input images can be placed in the folder: `./data/benchmarks/default/`.
+Your input images can be placed in the folder: `MolGrapher/data/benchmarks/default/`.
 ```
 bash molgrapher/scripts/annotate/run.sh
 ```
-Output predictions are saved in: `./data/predictions/default/`.
+Output predictions are saved in: `MolGrapher/data/predictions/default/`.
 
 #### Python
 ```

@@ -54,7 +54,10 @@ class MolgrapherModel:
             "clean": True,  # Clean specified output folders before running.
             "visualize": True,  # Visualize predicted graphs and MOL prediction.
             "visualize_rdkit": False,  # Visualize MOL prediction alone.
-            "node_classifier_variant": "gc_no_stereo_model",  # Select between "gc_stereo_model", "gc_gcn_model" and "gc_no_stereo_model". Recommended: "gc_no_stereo_model" (unless experimenting).
+            "node_classifier_variant": "gc_no_stereo_model",  # Select between "gc_no_stereo_model", "gc_gcn_model" and "gc_stereo_model". 
+                                                              # "gc_no_stereo_model" has the best accuracy in most cases. 
+                                                              # "gc_gcn_model" has better accuracy in some cases but do not recognizes abbreviations.
+                                                              # "gc_stereo_model" can recognize stereo-chemistry.                                                               
             "visualize_output_folder_path": os.path.dirname(__file__)
             + "/../../data/visualization/predictions/default/",
             "visualize_rdkit_output_folder_path": os.path.dirname(__file__)
@@ -274,7 +277,7 @@ class MolgrapherModel:
 
         # Recognize stereochemistry
         if self.args["assign_stereo"] and (
-            self.args["node_classifier_variant"] == "gc_stereo_model.ckpt"
+            self.args["node_classifier_variant"] == "gc_stereo_model"
         ):
             print(f"Starting Stereochemistry Recognition")
             ref_t = time()
@@ -299,7 +302,7 @@ class MolgrapherModel:
                 self.spelling_corrector,
                 assign_stereo=(
                     self.args["assign_stereo"]
-                    and (self.args["node_classifier_variant"] == "gc_stereo_model.ckpt")
+                    and (self.args["node_classifier_variant"] == "gc_stereo_model")
                 ),
                 align_rdkit_output=self.args["align_rdkit_output"],
                 postprocessing_flags={},
