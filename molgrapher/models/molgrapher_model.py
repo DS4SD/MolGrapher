@@ -2,13 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import json
-import logging
 import os
 import copy
 import shutil
 import cv2
-import ast 
-import argparse
+import tempfile
 import pandas as pd 
 from PIL import Image
 from pprint import pprint
@@ -37,32 +35,35 @@ torch.set_float32_matmul_precision("medium")
 
 
 class MolgrapherModel:
-    def __init__(self, args={}):   
+    def set_default_args(self):
         self.args = {
-            "force_cpu": False,
-            "force_no_multiprocessing": True, # Disable PaddleOCR multiprocessing for abbreviation detection
-            "num_threads_pytorch": 10,
-            "num_processes_mp": 10,
-            "chunk_size": 200,
-            "assign_stereo": True,
-            "align_rdkit_output": False,
-            "remove_captions": True,
-            "save_mol_folder": "",
+            "force_cpu": False,  # Force all processing to run on CPU.
+            "force_no_multiprocessing": True,  # Disable multiprocessing for PaddleOCR.
+            "num_threads_pytorch": 10,  # Number of threads used by PyTorch.
+            "num_processes_mp": 10,  # Number of processes for multiprocessing.
+            "chunk_size": 200,  # Number of images processed per batch.
+            "assign_stereo": True,  # Embed stereochemistry in MOL file output (only valid if a stereo model is used).
+            "align_rdkit_output": False,  # Embed 2D atom coordinates in output MOL files.
+            "remove_captions": True,  # Apply caption removal preprocessing using PaddleOCR.
+            "save_mol_folder": "",  # Output folder for saving MOL files.
+            "predict": True,  # Run prediction.
+            "preprocess": True,  # Apply preprocessing to input images.
+            "clean": True,  # Clean specified output folders before running.
+            "visualize": True,  # Visualize predicted graphs and MOL prediction.
+            "visualize_rdkit": False, # Visualize MOL prediction alone.
+            "node_classifier_variant": "gc_no_stereo_model", # Select between "gc_stereo_model", "gc_gcn_model" and "gc_no_stereo_model". Recommended: "gc_no_stereo_model" (unless experimenting).
+            "visualize_output_folder_path": os.path.dirname(__file__) + "/../../data/visualization/predictions/default/",
+            "visualize_rdkit_output_folder_path": os.path.dirname(__file__) + "/../../data/visualization/predictions/default_rdkit/",
             "config_dataset_graph_path": os.path.dirname(__file__) + "/../../data/config_dataset_graph_2.json",
             "config_training_graph_path": os.path.dirname(__file__) + "/../../data/config_training_graph.json",
             "config_dataset_keypoint_path": os.path.dirname(__file__) + "/../../data/config_dataset_keypoint.json",
             "config_training_keypoint_path": os.path.dirname(__file__) + "/../../data/config_training_keypoint.json",
-            "predict": True,
-            "preprocess": True,
-            "clean": True,
-            "visualize": True,
-            "visualize_rdkit": False,            
-            "visualize_output_folder_path": os.path.dirname(__file__) + "/../../data/visualization/predictions/default/",
-            "visualize_rdkit_output_folder_path": os.path.dirname(__file__) + "/../../data/visualization/predictions/default_rdkit/"
         }
 
+    def __init__(self, args={}):   
+        self.set_default_args()
         self.args.update(args)
-
+        
         print("Arguments:")
         pprint(self.args)
 
@@ -99,6 +100,23 @@ class MolgrapherModel:
         self.config_dataset_keypoint["num_processes_mp"] = self.args["num_processes_mp"]
         self.config_dataset_keypoint["num_threads_pytorch"] = self.args["num_threads_pytorch"]
         
+        # Update number of atoms/bonds classes if a node classifier variant is selected.
+        if self.args["node_classifier_variant"] != "":
+            self.config_model_graph = {}
+            self.config_model_graph["node_classifier_variant"] = self.args["node_classifier_variant"]
+            if self.args["node_classifier_variant"] == "gc_no_stereo_model":
+                self.config_dataset_graph["nb_atoms_classes"] = 182
+                self.config_dataset_graph["nb_bonds_classes"] = 6
+                self.config_model_graph["gcn_on"] = False
+            if self.args["node_classifier_variant"] == "gc_stereo_model":
+                self.config_dataset_graph["nb_atoms_classes"] = 120
+                self.config_dataset_graph["nb_bonds_classes"] = 8
+                self.config_model_graph["gcn_on"] = False
+            if self.args["node_classifier_variant"] == "gc_gcn_model":
+                self.config_dataset_graph["nb_atoms_classes"] = 141
+                self.config_dataset_graph["nb_bonds_classes"] = 5
+                self.config_model_graph["gcn_on"] = True 
+                
         # Set # threads
         torch.set_num_threads(self.config_dataset_graph["num_threads_pytorch"])
 
@@ -107,7 +125,8 @@ class MolgrapherModel:
             self.config_dataset_keypoint,
             self.config_training_keypoint,
             self.config_dataset_graph,
-            self.config_training_graph
+            self.config_training_graph,
+            self.config_model_graph
         )
         print(f"Keypoint detector number parameters: {round(count_model_parameters(self.model.keypoint_detector)/10**6, 4)} M")
         print(f"Node classifier number parameters: {round(count_model_parameters(self.model.graph_classifier)/10**6, 4)} M")
@@ -221,7 +240,7 @@ class MolgrapherModel:
         print(f"Abbreviation Recognition completed in {round(time() - ref_t, 2)}")
 
         # Recognize stereochemistry
-        if self.args["assign_stereo"]:
+        if self.args["assign_stereo"] and (self.args["node_classifier_variant"] == "gc_stereo_model.ckpt"):
             print(f"Starting Stereochemistry Recognition")
             ref_t = time()
             predictions["graphs"] = self.stereochemistry_recognizer(images_, predictions["graphs"], bonds_sizes)
@@ -237,7 +256,7 @@ class MolgrapherModel:
                 self.abbreviations_smiles_mapping,
                 self.ocr_atoms_classes_mapping,
                 self.spelling_corrector,
-                assign_stereo=self.args["assign_stereo"],
+                assign_stereo=(self.args["assign_stereo"] and (self.args["node_classifier_variant"] == "gc_stereo_model.ckpt")),
                 align_rdkit_output=self.args["align_rdkit_output"],
                 postprocessing_flags = {}
             )
@@ -329,6 +348,7 @@ class MolgrapherModel:
                         smiles = smiles,
                         molecule = molecule,
                         augmentations = False,
+                        path = tempfile.NamedTemporaryFile(suffix=".png", delete=False).name
                     )
                     if image is not None:
                         axis[2].imshow(image.permute(1, 2, 0))
@@ -349,6 +369,7 @@ class MolgrapherModel:
                         smiles = Chem.MolToSmiles(molecule),
                         molecule = molecule,
                         augmentations = False,
+                        path = tempfile.NamedTemporaryFile(suffix=".png", delete=False).name
                     )
                     if image is not None:
                         axis[1].imshow(image.permute(1, 2, 0))

@@ -76,13 +76,13 @@ class MessagePassing(pl.LightningModule):
         return global_consistency
 
 class GNN(nn.Module):
-    def __init__(self, config_dataset, node_embedding_dimension, device):
+    def __init__(self, config_dataset, node_embedding_dimension, gcn_on, device):
         super().__init__()
         self.config_dataset = config_dataset
         self.node_embedding_dimension = node_embedding_dimension
         self.nb_filters_out = node_embedding_dimension
 
-        self.gcn_on = False
+        self.gcn_on = gcn_on
 
         if self.gcn_on:
             # graph_classifier_model_name = "exp-ad-11-run-mp-4-64-02-val_loss=0.0086"
@@ -136,7 +136,7 @@ class GNN(nn.Module):
 
 
 class GraphClassifier(pl.LightningModule):
-    def __init__(self, config_dataset, config_training):
+    def __init__(self, config_dataset, config_training, gcn_on=False):
         super().__init__()
         self.save_hyperparameters(config_training)
         self.config_dataset = config_dataset
@@ -147,7 +147,7 @@ class GraphClassifier(pl.LightningModule):
         # Parameters
         self.backbone = Backbone()
         self.node_embedding_dimension = self.backbone.nb_filters 
-        self.gnn = GNN(config_dataset, self.node_embedding_dimension, self.device)
+        self.gnn = GNN(config_dataset, self.node_embedding_dimension, gcn_on, self.device)
         
         self.bond_nb_sampled_points = 3 #5
         self.bond_fusion = False

@@ -28,8 +28,8 @@ Links: [ICCV](https://openaccess.thecvf.com/content/ICCV2023/html/Morin_MolGraph
 
 Create a virtual environment.
 ```
-conda create -n molgrapher python=3.11
-conda activate molgrapher
+python3.11 -m venv molgrapher-env
+source molgrapher-env/bin/activate
 ```
 Install [MolGrapher](https://github.com/DS4SD/MolGrapher/) and [MolDepictor](https://github.com/DS4SD/MolDepictor/) for CPU.
 ```

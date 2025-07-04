@@ -10,6 +10,8 @@ import numpy as np
 import json 
 from math import *
 import cv2
+import subprocess
+from huggingface_hub import snapshot_download
 
 from molgrapher.models.graph_constructor import GraphConstructor
 from molgrapher.models.keypoint_detector import KeypointDetector
@@ -23,39 +25,57 @@ class GraphRecognizer(pl.LightningModule):
         config_training_keypoint, 
         config_dataset_graph, 
         config_training_graph, 
-        keypoint_detector_model_name="",
-        graph_classifier_model_name=""
+        config_model_graph=None, 
+        keypoint_detector_model_path="",
+        graph_classifier_model_path=""
     ):
         super().__init__()
         self.config_dataset_graph = config_dataset_graph
         self.config_dataset_keypoint = config_dataset_keypoint
-        self.keypoint_detector_model_name = keypoint_detector_model_name
-        self.graph_classifier_model_name = graph_classifier_model_name
 
-        if self.keypoint_detector_model_name == "":
-            self.keypoint_detector_model_name = "kd_model.ckpt" 
-            self.keypoint_detector_model_name = os.path.dirname(__file__) + f"/../../data/models/keypoint_detector/" + self.keypoint_detector_model_name
-        
+        if keypoint_detector_model_path == "":
+            keypoint_detector_model_path = os.path.dirname(__file__) + f"/../../data/models/keypoint_detector/kd_model.ckpt" 
+            if not(os.path.exists(keypoint_detector_model_path)):
+                print("Downloading keypoint detector model...")
+                subprocess.run([
+                    "wget",
+                    "https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/keypoint_detector/kd_model.ckpt",
+                    "-P",
+                    "./data/models/keypoint_detector/"
+                ], check=True)
+        if graph_classifier_model_path == "":
+            graph_classifier_model_path = os.path.dirname(__file__) + f"/../../data/models/graph_classifier/{config_model_graph['node_classifier_variant']}.ckpt"
+            if not(os.path.exists(graph_classifier_model_path)):
+                print("Downloading node classifier model...")
+                subprocess.run([
+                    "wget", 
+                    f"https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/graph_classifier/{config_model_graph['node_classifier_variant']}.ckpt", 
+                    "-P", 
+                    "./data/models/graph_classifier/"
+                ], check=True)
+
+        # # Download models
+        # if not(os.path.exists(keypoint_detector_model_path) or os.path.exists(keypoint_detector_model_path)):
+        #     path = snapshot_download(repo_id="ds4sd/MolGrapher", revision="main")
+        #     print(path)
+  
         self.keypoint_detector = KeypointDetector.load_from_checkpoint(
-            self.keypoint_detector_model_name, 
+            keypoint_detector_model_path, 
             config_dataset = config_dataset_keypoint,
             config_training = config_training_keypoint,
             map_location = self.device
         )
-        if self.graph_classifier_model_name == "":
-            #self.graph_classifier_model_name = "gc_stereo_model.ckpt"
-            #self.graph_classifier_model_name = "gc_gcn_model.ckpt"
-            self.graph_classifier_model_name = "gc_no_stereo_model.ckpt" 
-            self.graph_classifier_model_name = os.path.dirname(__file__) + f"/../../data/models/graph_classifier/" + self.graph_classifier_model_name
-
-        print(self.graph_classifier_model_name)
-        print(self.keypoint_detector_model_name)
+        
         self.graph_classifier = GraphClassifier.load_from_checkpoint(
-            self.graph_classifier_model_name, 
+            graph_classifier_model_path, 
             config_dataset = config_dataset_graph, 
             config_training = config_training_graph,
+            gcn_on = config_model_graph["gcn_on"],
             map_location = self.device
         )
+        
+        print("Selected keypoint detector model: ", keypoint_detector_model_path)
+        print("Selected node classifier model: ", graph_classifier_model_path)
 
     def predict(self, batch, use_gt_structure=False, verbose=False, return_all_steps=False):
         if verbose:

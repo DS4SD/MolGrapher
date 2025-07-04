@@ -38,9 +38,9 @@ def get_ocr_recognition_only(force_cpu = False):
         use_angle_cls = True, 
         max_text_length = 60,
         show_log = False,
-        det_model_dir = os.path.dirname(__file__) + "/../../data/external/paddleocr/en_PP-OCRv3_det_infer/",
-        rec_model_dir = os.path.dirname(__file__) + "/../../data/external/paddleocr/en_PP-OCRv3_rec_infer/",
-        cls_model_dir = os.path.dirname(__file__) + "/../../data/external/paddleocr/ch_ppocr_mobile_v2.0_cls_infer",
+        # det_model_dir = os.path.dirname(__file__) + "/../../data/external/paddleocr/en_PP-OCRv3_det_infer/",
+        # rec_model_dir = os.path.dirname(__file__) + "/../../data/external/paddleocr/en_PP-OCRv3_rec_infer/",
+        # cls_model_dir = os.path.dirname(__file__) + "/../../data/external/paddleocr/ch_ppocr_mobile_v2.0_cls_infer",
         use_gpu = not(force_cpu)
     )
     return ocr_recognition_only 
@@ -56,9 +56,9 @@ def get_ocr(force_cpu = False):
         det_db_score_mode = 'slow', 
         drop_score = 1e-15,
         show_log = False,
-        det_model_dir = os.path.dirname(__file__) + "/../../data/external/paddleocr/en_PP-OCRv3_det_infer/",
-        rec_model_dir = os.path.dirname(__file__) + "/../../data/external/paddleocr/en_PP-OCRv3_rec_infer/",
-        cls_model_dir = os.path.dirname(__file__) + "/../../data/external/paddleocr/ch_ppocr_mobile_v2.0_cls_infer",
+        # det_model_dir = os.path.dirname(__file__) + "/../../data/external/paddleocr/en_PP-OCRv3_det_infer/",
+        # rec_model_dir = os.path.dirname(__file__) + "/../../data/external/paddleocr/en_PP-OCRv3_rec_infer/",
+        # cls_model_dir = os.path.dirname(__file__) + "/../../data/external/paddleocr/ch_ppocr_mobile_v2.0_cls_infer",
         use_gpu = not(force_cpu)
     )
     return ocr 
@@ -554,7 +554,6 @@ class SpellingCorrector:
         self.substitute_costs[ord('n'), ord('N')] = 0.4
         self.substitute_costs[ord('h'), ord('H')] = 0.4
         self.substitute_costs[ord('K'), ord('H')] = 0.5
-        #self.substitute_costs[ord(' '), ord('H')] = 0.5
         self.substitute_costs[ord('s'), ord('S')] = 0.4
         self.substitute_costs[ord(' '), ord('2')] = 0.6
         self.substitute_costs[ord(','), ord('2')] = 0.4

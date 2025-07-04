@@ -34,9 +34,9 @@ def get_ocr(force_cpu):
         det_limit_side_len = 2500,
         max_batch_size = 50,
         show_log = False,
-        det_model_dir = os.path.dirname(__file__) + "/../../data/external/paddleocr/en_PP-OCRv3_det_infer/",
-        rec_model_dir = os.path.dirname(__file__) + "/../../data/external/paddleocr/en_PP-OCRv3_rec_infer/",
-        cls_model_dir = os.path.dirname(__file__) + "/../../data/external/paddleocr/ch_ppocr_mobile_v2.0_cls_infer",
+        # det_model_dir = os.path.dirname(__file__) + "/../../data/external/paddleocr/en_PP-OCRv3_det_infer/",
+        # rec_model_dir = os.path.dirname(__file__) + "/../../data/external/paddleocr/en_PP-OCRv3_rec_infer/",
+        # cls_model_dir = os.path.dirname(__file__) + "/../../data/external/paddleocr/ch_ppocr_mobile_v2.0_cls_infer",
         use_gpu = not(force_cpu),
     )  
     return ocr 

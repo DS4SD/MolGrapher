@@ -9,6 +9,16 @@ def install_torch(package: str, version: str = '', cpu: bool=True):
     cuda = "arm" not in platform.platform()
     if cpu:
         python_version = ''.join(platform.python_version().split('.')[:2])
+        print(''.join([
+            f'{package} @ https://download.pytorch.org/whl/',
+            f'cpu/',
+            f'{package}',
+            f'-{version}' if version else '',
+            '%2Bcpu',
+            f'-cp{python_version}-cp{python_version}',
+            'm' if int(python_version) <= 37 else '',
+            '-linux_x86_64.whl',
+        ]))
         return ''.join([
             f'{package} @ https://download.pytorch.org/whl/',
             f'cpu/',
@@ -22,6 +32,16 @@ def install_torch(package: str, version: str = '', cpu: bool=True):
     else:
         python_version = "311"
         cuda_version = "117"
+        print(''.join([
+            f'{package} @ https://download.pytorch.org/whl/',
+            f'cu{cuda_version}/' if cuda else '',
+            f'{package}',
+            f'-{version}' if version else '',
+            f'%2Bcu{cuda_version}' if cuda else '',
+            f'-cp{python_version}-cp{python_version}',
+            'm' if int(python_version) <= 37 else '',
+            '-linux_x86_64.whl',
+        ]))
         return ''.join([
             f'{package} @ https://download.pytorch.org/whl/',
             f'cu{cuda_version}/' if cuda else '',
@@ -42,6 +62,12 @@ def install_paddle(package: str, version: str = ''):
     cuda_version = "117"
     cuda_version_with_point = "11.7"
     cudnn_version = "8.4.1"
+    print(''.join([
+        f'{package} @ https://paddle-wheel.bj.bcebos.com/',
+        f'{version}/linux/',
+        f'linux-gpu-cuda{cuda_version_with_point}-cudnn{cudnn_version}-mkl-gcc8.2-avx/',
+        f'paddlepaddle_gpu-{version}.post{cuda_version}-cp{python_version}-cp{python_version}-linux_x86_64.whl'
+    ]))
     return ''.join([
         f'{package} @ https://paddle-wheel.bj.bcebos.com/',
         f'{version}/linux/',
@@ -57,7 +83,6 @@ setuptools.setup(
     version="1.0.0",
     author="Lucas Morin",
     author_email="lum@zurich.ibm.com",
-    description="A Python library",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/DS4SD/MolGrapher",
@@ -79,7 +104,7 @@ setuptools.setup(
         "ipython",
         "rouge-score",
         "albumentations",
-        "paddleocr",
+        "paddleocr==2.10.0",
         "torchsummary",
         "weighted-levenshtein"
     ],
@@ -89,10 +114,9 @@ setuptools.setup(
         "License :: Other/Proprietary License",
         "Natural Language :: English",
         "Operating System :: OS Independent",
-        "Topic :: Database",
+        "Topic :: Computer Vision",
         "Programming Language :: Python :: 3",
     ],
-    python_requires='>=3.9', 
     package_data={"": ["*.json"]},
     extras_require={
         "gpu": [
