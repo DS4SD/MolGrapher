@@ -129,7 +129,7 @@ class MolgrapherModel:
                 self.config_dataset_graph["nb_bonds_classes"] = 6
                 self.config_model_graph["gcn_on"] = False
             if self.args["node_classifier_variant"] == "gc_stereo_model":
-                self.config_dataset_graph["nb_atoms_classes"] = 120
+                self.config_dataset_graph["nb_atoms_classes"] = 182
                 self.config_dataset_graph["nb_bonds_classes"] = 8
                 self.config_model_graph["gcn_on"] = False
             if self.args["node_classifier_variant"] == "gc_gcn_model":
