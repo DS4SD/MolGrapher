@@ -44,7 +44,7 @@ class CustomWriter(BasePredictionWriter):
         torch.distributed.broadcast_object_list(output_dir)
 
         # Make sure every process received the output_dir from RANK=0
-        torch.distributed.barrier()  
+        torch.distributed.barrier()
         # Now that we have a single output_dir shared across processes we can save
         # prediction along with their indices.
         self.output_dir = output_dir[0]
@@ -65,8 +65,12 @@ class CustomWriter(BasePredictionWriter):
         Prediciton object respecting the original order of the samples.
         """
         files = sorted(os.listdir(self.output_dir))
-        predictions = [torch.load(os.path.join(self.output_dir, f))[0] for f in files if "pred" in f]
-       
+        predictions = [
+            torch.load(os.path.join(self.output_dir, f))[0]
+            for f in files
+            if "pred" in f
+        ]
+
         return predictions
 
     def cleanup(self):

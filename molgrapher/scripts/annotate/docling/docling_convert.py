@@ -1,24 +1,32 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import argparse
+import json
 import os
 from pathlib import Path
-import json 
-import argparse
 
-from docling.document_converter import DocumentConverter
+from docling.backend.docling_parse_v2_backend import \
+    DoclingParseV2DocumentBackend
 from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling.document_converter import DocumentConverter, PdfFormatOption
-from docling.backend.docling_parse_v2_backend import DoclingParseV2DocumentBackend
 from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--pdf-path', type = str, default = os.path.dirname(__file__) + f"/../../../../data/pdfs/US9259003_p4.pdf")
-    parser.add_argument('--docling-document-directory-path', type = str, default = os.path.dirname(__file__) + f"/../../../../data/pdfs/US9259003_p4/")
-    args = parser.parse_args()   
+    parser.add_argument(
+        "--pdf-path",
+        type=str,
+        default=os.path.dirname(__file__) + f"/../../../../data/pdfs/US9259003_p4.pdf",
+    )
+    parser.add_argument(
+        "--docling-document-directory-path",
+        type=str,
+        default=os.path.dirname(__file__) + f"/../../../../data/pdfs/US9259003_p4/",
+    )
+    args = parser.parse_args()
 
     print(args.docling_document_directory_path)
     Path(args.docling_document_directory_path).mkdir(parents=True, exist_ok=True)
@@ -39,11 +47,14 @@ def main():
         }
     )
     conv_res = doc_converter.convert(Path(args.pdf_path))
-    
+
     # Save document
     doc_filename = conv_res.input.file.stem
-    with (Path(args.docling_document_directory_path) / f"{doc_filename}.json").open("w", encoding="utf-8") as fp:
+    with (Path(args.docling_document_directory_path) / f"{doc_filename}.json").open(
+        "w", encoding="utf-8"
+    ) as fp:
         fp.write(json.dumps(conv_res.document.export_to_dict()))
+
 
 if __name__ == "__main__":
     main()
