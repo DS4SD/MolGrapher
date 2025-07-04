@@ -28,8 +28,8 @@ Links: [ICCV](https://openaccess.thecvf.com/content/ICCV2023/html/Morin_MolGraph
 
 Create a virtual environment.
 ```
-conda create -n molgrapher python=3.11
-conda activate molgrapher
+python3.11 -m venv molgrapher-env
+source molgrapher-env/bin/activate
 ```
 Install [MolGrapher](https://github.com/DS4SD/MolGrapher/) and [MolDepictor](https://github.com/DS4SD/MolDepictor/) for CPU.
 ```
@@ -46,25 +46,16 @@ To install and run MolGrapher using Docker, please refer to [README_DOCKER.md](h
 
 ### Model
 
-Models are available on [Hugging Face](https://huggingface.co/ds4sd/MolGrapher).
-```
-wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/graph_classifier/gc_gcn_model.ckpt -P ./data/models/graph_classifier/
-wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/graph_classifier/gc_no_stereo_model.ckpt -P ./data/models/graph_classifier/
-wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/graph_classifier/gc_stereo_model.ckpt -P ./data/models/graph_classifier/
-wget https://huggingface.co/ds4sd/MolGrapher/resolve/main/models/keypoint_detector/kd_model.ckpt -P ./data/models/keypoint_detector/
-```
-
-After downloading, the folder `models` from Hugging Face should be placed in: `./data/`.
-Models can be selected by modifying attributes of GraphRecognizer in `./molgrapher/models/graph_recognizer.py` (The steps to follow are detailed in this [issue](https://github.com/DS4SD/MolGrapher/issues/6#issuecomment-2132380848)).
+Models are available on [Hugging Face](https://huggingface.co/ds4sd/MolGrapher). They are automatically downloaded in `MolGrapher/data/models` when running the model. The model parameters are documented [here](https://github.com/DS4SD/MolGrapher/blob/b855f21567afced54c6ab680654c88ae5a40ef14/molgrapher/models/molgrapher_model.py#L42).
 
 ### Inference
 
 #### Script
-Your input images can be placed in the folder: `./data/benchmarks/default/`.
+Your input images can be placed in the folder: `MolGrapher/data/benchmarks/default/`.
 ```
 bash molgrapher/scripts/annotate/run.sh
 ```
-Output predictions are saved in: `./data/predictions/default/`.
+Output predictions are saved in: `MolGrapher/data/predictions/default/`.
 
 #### Python
 ```

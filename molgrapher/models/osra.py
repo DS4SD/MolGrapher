@@ -1,25 +1,33 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import subprocess
-import pytorch_lightning as pl
 import multiprocessing
-from rdkit import Chem 
+import subprocess
+
+import pytorch_lightning as pl
+from rdkit import Chem
+
 
 def predict_process(image_filename):
-    process = subprocess.Popen("exec osra -i " + image_filename, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(
+        "exec osra -i " + image_filename,
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
     try:
         outs, errors = process.communicate(timeout=50)
     except subprocess.TimeoutExpired:
         process.kill()
         return None
 
-    if (errors != b""):
+    if errors != b"":
         print(errors)
         return None
-    smiles = outs.decode('UTF-8')
+    smiles = outs.decode("UTF-8")
     smiles = smiles.replace("\n", "")
     return smiles
+
 
 class OSRA(pl.LightningModule):
     def __init__(self):
@@ -32,6 +40,6 @@ class OSRA(pl.LightningModule):
         pool.close()
         pool.join()
         return smiles_batch
-    
+
     def predict_step(self, batch, batch_idx):
         return self.predict(batch["images_filenames"])
