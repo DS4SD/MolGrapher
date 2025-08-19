@@ -15,7 +15,7 @@ If you find this repository useful, please consider citing:
 ```
 @InProceedings{Morin_2023_ICCV,
     author = {Morin, Lucas and Danelljan, Martin and Agea, Maria Isabel and Nassar, Ahmed and Weber, Valery and Meijer, Ingmar and Staar, Peter and Yu, Fisher},
-    title = {MolGrapher: Graph-based Visual Recognition of Chemical Structures},
+    title = {{MolGrapher: Graph-based Visual Recognition of Chemical Structures}},
     booktitle = {Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)},
     month = {October},
     year = {2023},
