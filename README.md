@@ -13,13 +13,13 @@ This is the repository for [MolGrapher: Graph-based Visual Recognition of Chemic
 
 If you find this repository useful, please consider citing:
 ```
-@InProceedings{Morin_2023_ICCV,
-    author = {Morin, Lucas and Danelljan, Martin and Agea, Maria Isabel and Nassar, Ahmed and Weber, Valery and Meijer, Ingmar and Staar, Peter and Yu, Fisher},
-    title = {{MolGrapher: Graph-based Visual Recognition of Chemical Structures}},
-    booktitle = {Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)},
-    month = {October},
-    year = {2023},
-    pages = {19552-19561}
+@inproceedings{Morin_2023_ICCV,
+	title        = {{MolGrapher: Graph-based Visual Recognition of Chemical Structures}},
+	author       = {Morin, Lucas and Danelljan, Martin and Agea, Maria Isabel and Nassar, Ahmed and Weber, Valery and Meijer, Ingmar and Staar, Peter and Yu, Fisher},
+	year         = 2023,
+	month        = {October},
+	booktitle    = {Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)},
+	pages        = {19552--19561}
 }
 ```
 Links: [ICCV](https://openaccess.thecvf.com/content/ICCV2023/html/Morin_MolGrapher_Graph-based_Visual_Recognition_of_Chemical_Structures_ICCV_2023_paper.html), [Arxiv](https://arxiv.org/abs/2308.12234) 
