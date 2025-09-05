@@ -19,12 +19,12 @@ def main():
     parser.add_argument(
         "--pdf-path",
         type=str,
-        default=os.path.dirname(__file__) + f"/../../../../data/pdfs/US9259003_p4.pdf",
+        default=os.path.dirname(__file__) + f"/../../../../data/pdfs/US9259003_page_4.pdf",
     )
     parser.add_argument(
         "--docling-document-directory-path",
         type=str,
-        default=os.path.dirname(__file__) + f"/../../../../data/pdfs/US9259003_p4/",
+        default=os.path.dirname(__file__) + f"/../../../../data/pdfs/US9259003_page_4/",
     )
     args = parser.parse_args()
 
