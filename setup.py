@@ -91,6 +91,7 @@ setuptools.setup(
         "paddleocr==2.10.0",
         "torchsummary",
         "weighted-levenshtein",
+        "numpy==1.26.4"
     ],
     classifiers=[
         "Development Status :: 1 - Planning",
