@@ -22,7 +22,6 @@ If you find this repository useful, please consider citing:
 	pages        = {19552--19561}
 }
 ```
-Links: [ICCV](https://openaccess.thecvf.com/content/ICCV2023/html/Morin_MolGrapher_Graph-based_Visual_Recognition_of_Chemical_Structures_ICCV_2023_paper.html), [Arxiv](https://arxiv.org/abs/2308.12234) 
 
 ### Installation
 
@@ -40,24 +39,13 @@ Install [MolGrapher](https://github.com/DS4SD/MolGrapher/) and [MolDepictor](htt
 ```
 pip install -e .["gpu"]
 ```
-CUDA and CDNN versions can be edited in `setup.py`.
 
 To install and run MolGrapher using Docker, please refer to [README_DOCKER.md](https://github.com/DS4SD/MolGrapher/blob/main/README_DOCKER.md).
 
-### Model
-
-Models are available on [Hugging Face](https://huggingface.co/ds4sd/MolGrapher). They are automatically downloaded in `MolGrapher/data/models` when running the model. The model parameters are documented [here](https://github.com/DS4SD/MolGrapher/blob/b855f21567afced54c6ab680654c88ae5a40ef14/molgrapher/models/molgrapher_model.py#L42).
-
 ### Inference
 
-#### Script
-Your input images can be placed in the folder: `MolGrapher/data/benchmarks/default/`.
-```
-bash molgrapher/scripts/annotate/run.sh
-```
-Output predictions are saved in: `MolGrapher/data/predictions/default/`.
-
 #### Python
+
 ```
 from molgrapher.models.molgrapher_model import MolgrapherModel
 
@@ -83,6 +71,23 @@ annotations = model.predict_batch(images_or_paths)
    ...
 ]
 ```
+
+#### Script
+
+1. Place your input images in: `MolGrapher/data/benchmarks/default/`.
+
+2. Run MolGrapher:
+```
+bash molgrapher/scripts/annotate/run.sh
+```
+
+3. Read predictions in: `MolGrapher/data/predictions/default/`.
+
+4. (Optional) Visualize predictions in: `MolGrapher/data/visualization/predictions/default/`.
+
+### Model
+
+Models are available on [Hugging Face](https://huggingface.co/ds4sd/MolGrapher). They are automatically downloaded in `MolGrapher/data/models` when running the model. The model parameters are documented [here](https://github.com/DS4SD/MolGrapher/blob/b855f21567afced54c6ab680654c88ae5a40ef14/molgrapher/models/molgrapher_model.py#L42).
 
 ### Docling Integration
 [Docling](https://github.com/DS4SD/docling) is a toolkit to extract the content and structure from PDF documents. It recognizes page layout, reading order, table structure, code, formulas, and classify images. 
