@@ -87,7 +87,7 @@ bash molgrapher/scripts/annotate/run.sh
 
 ### Model
 
-Models are available on [Hugging Face](https://huggingface.co/ds4sd/MolGrapher). They are automatically downloaded in `MolGrapher/data/models` when running the model. The model parameters are documented [here](https://github.com/DS4SD/MolGrapher/blob/b855f21567afced54c6ab680654c88ae5a40ef14/molgrapher/models/molgrapher_model.py#L42).
+Models are available on [Hugging Face](https://huggingface.co/ds4sd/MolGrapher). They are automatically downloaded when running the model's inference. The model parameters are documented [here](https://github.com/DS4SD/MolGrapher/blob/b855f21567afced54c6ab680654c88ae5a40ef14/molgrapher/models/molgrapher_model.py#L42).
 
 ### Docling Integration
 [Docling](https://github.com/DS4SD/docling) is a toolkit to extract the content and structure from PDF documents. It recognizes page layout, reading order, table structure, code, formulas, and classify images. 
