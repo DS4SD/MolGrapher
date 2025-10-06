@@ -1,7 +1,7 @@
 # MolGrapher
 
 [![Huggingface](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-USPTO--30K-blue)](https://huggingface.co/datasets/ds4sd/USPTO-30K/)
-[![Huggingface](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-MolGrapher--Synthetic%0A300K-blue)](https://huggingface.co/datasets/ds4sd/MolGrapher-Synthetic-300K)
+[![Huggingface](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-MolGrapher--Synthetic--300K-blue)](https://huggingface.co/datasets/ds4sd/MolGrapher-Synthetic-300K)
 [![arXiv](https://img.shields.io/badge/arXiv-2308.12234-919191.svg)](https://doi.org/10.48550/arXiv.2308.12234)
 [![ICCV](https://img.shields.io/badge/Paper-iccv51070.2023.01791-b31b1b.svg)](https://openaccess.thecvf.com/content/ICCV2023/html/Morin_MolGrapher_Graph-based_Visual_Recognition_of_Chemical_Structures_ICCV_2023_paper.html)
 
