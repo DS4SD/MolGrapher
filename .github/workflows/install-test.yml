@@ -1,0 +1,88 @@
+name: Install & Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  linux-cpu:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install "git+https://github.com/lucas-morin/MolGrapher#egg=molgrapher[cpu]"
+
+      - name: Create prediction test script
+        run: |
+          cat > run_predict.py <<'PY'
+          from molgrapher.models.molgrapher_model import MolgrapherModel
+
+          def main():
+              model = MolgrapherModel()
+              images_or_paths = ["./data/benchmarks/default/images/image_0.png"]
+              annotations = model.predict_batch(images_or_paths)
+              print("Predictions:", annotations)
+
+          if __name__ == "__main__":
+              main()
+          PY
+
+      - name: Run prediction test
+        run: python run_predict.py
+
+  macos:
+    strategy:
+      matrix:
+        os: [macos-15, macos-14, macos-15-intel]
+        python-version: ["3.11"]
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Export Homebrew library path for dynamic loading
+        run: echo "DYLD_FALLBACK_LIBRARY_PATH=$(brew --prefix)/lib" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install \
+            torch==2.1.2 torchvision==0.16.2 \
+            "paddlepaddle==0.0.0" -f https://www.paddlepaddle.org.cn/whl/mac/cpu/develop.html \
+            "git+https://github.com/lucas-morin/MolGrapher#egg=molgrapher"
+
+      - name: Create prediction test script
+        run: |
+          cat > run_predict.py <<'PY'
+          from molgrapher.models.molgrapher_model import MolgrapherModel
+
+          def main():
+              model = MolgrapherModel()
+              images_or_paths = ["./data/benchmarks/default/images/image_0.png"]
+              annotations = model.predict_batch(images_or_paths)
+              print("Predictions:", annotations)
+
+          if __name__ == "__main__":
+              main()
+          PY
+
+      - name: Run prediction test
+        run: python run_predict.py

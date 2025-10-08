@@ -30,12 +30,18 @@ Create a virtual environment.
 python3.11 -m venv molgrapher-env
 source molgrapher-env/bin/activate
 ```
-Install [MolGrapher](https://github.com/DS4SD/MolGrapher/) and [MolDepictor](https://github.com/DS4SD/MolDepictor/) for CPU.
+**Option 1**: Install [MolGrapher](https://github.com/DS4SD/MolGrapher/) for CPU.
+
+For Linux:
 ```
 pip install -e .["cpu"]
 ```
+For MacOS: 
+```
+pip install torch==2.1.2 torchvision==0.16.2 paddlepaddle==0.0.0" -f https://www.paddlepaddle.org.cn/whl/mac/cpu/develop.html "git+https://github.com/lucas-morin/MolGrapher#egg=molgrapher"
+```
 
-Install [MolGrapher](https://github.com/DS4SD/MolGrapher/) and [MolDepictor](https://github.com/DS4SD/MolDepictor/) for GPU. (Tested for x86_64, Linux Ubuntu 20.04, CUDA 11.7, CUDNN 8.4)
+**Option 2**: Install [MolGrapher](https://github.com/DS4SD/MolGrapher/) for GPU. (Tested for x86_64, Linux Ubuntu 20.04, CUDA 11.7, CUDNN 8.4)
 ```
 pip install -e .["gpu"]
 ```
