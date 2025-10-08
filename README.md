@@ -96,7 +96,7 @@ bash molgrapher/scripts/annotate/run.sh
 Models are available on [Hugging Face](https://huggingface.co/ds4sd/MolGrapher). They are automatically downloaded when running the model's inference. The model parameters are documented [here](https://github.com/DS4SD/MolGrapher/blob/b855f21567afced54c6ab680654c88ae5a40ef14/molgrapher/models/molgrapher_model.py#L42).
 
 ### Docling Integration
-[Docling](https://github.com/DS4SD/docling) is a toolkit to extract the content and structure from PDF documents. It recognizes page layout, reading order, table structure, code, formulas, and classify images. 
+[Docling](https://github.com/DS4SD/docling) is a toolkit to extract the content and structure from PDF documents. It recognizes page layout, reading order, table structure, code, formulas, classify images, and more. 
 Here, we combine `docling` and `MolGrapher`: 
 - `Docling` segments and classify chemical-structure images from document pages,
 - `MolGrapher` converts images to SMILES.
@@ -106,14 +106,14 @@ Install `docling` in the `molgrapher` environment.
 pip install docling
 ```
 
-Option 1. Convert a PDF document with `docling` and enrich it with `MolGrapher` annotations. 
+**Option 1**: Convert a PDF document with `docling` and enrich it with `MolGrapher` annotations. 
 
 Example: 
 ```
 bash molgrapher/scripts/annotate/docling/docling_convert_and_enrich.sh ./data/pdfs/US9259003_page_4.pdf ./data/docling_documents/US9259003_page_4/
 # bash [script] [pdf-path] [docling-document-directory-path]
 ```
-Option 2. Enrich an existing `docling` document with `MolGrapher` annotations.
+**Option 2**: Enrich an existing `docling` document with `MolGrapher` annotations.
 
 Example: 
 ```
@@ -121,7 +121,7 @@ python3 molgrapher/scripts/annotate/docling/enrich_docling_document.py --docling
 # python3 [script] --docling-document-directory-path [docling-document-directory-path]
 ```
 
-The `docling` document, enriched with SMILES predictions, will be stored in `[docling-document-directory-path]`.
+The `docling` document, enriched with SMILES predictions, is stored in `[docling-document-directory-path]`.
 For more information, please refer to [docling](https://github.com/DS4SD/docling).
 
 ### USPTO-30K Benchmark
