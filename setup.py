@@ -71,10 +71,16 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/DS4SD/MolGrapher",
     packages=setuptools.find_packages(exclude=["tests.*", "tests"]),
+    setup_requires=[
+        'pytest-runner',
+    ],
+    tests_require=[
+        'pytest',
+    ],
     install_requires=[
         "mol-depict @ git+https://git@github.com/DS4SD/MolDepictor.git",
-        "pytorch-lightning==2.1.3",
-        "torch_geometric==2.4.0",
+        "pytorch-lightning", # "pytorch-lightning==2.1.3",
+        "torch_geometric", # "torch_geometric==2.4.0",
         "scikit-learn",
         "seaborn",
         "timm",
@@ -111,9 +117,12 @@ setuptools.setup(
             install_paddle("paddlepaddle-gpu", "2.6.0"),
         ],
         "cpu": [
-            install_torch("torch", "2.1.2", cpu=True),
-            install_torch("torchvision", "0.16.2", cpu=True),
-            "paddlepaddle",
+            install_torch('torch', '2.6.0', cpu=True),
+            install_torch('torchvision', '0.21.0', cpu=True),
+            "paddlepaddle==2.6.2",
+        ],
+        "docling": [
+            "docling>=2.62.0",
         ],
     },
 )
